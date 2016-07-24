@@ -49,7 +49,7 @@ const Figure = (() => {
 		}
 
 		flip() {
-			this.regX = this.getBounds().width / 2;
+			this.regX = Math.ceil(this.getTransformedBounds().width * 0.5);
 			this.scaleX = -1;
 			this.updateCache();
 		}
