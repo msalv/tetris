@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Tetris</title>
+	<link rel="stylesheet" href="res/style.css" />
+</head>
+
+<body>
+	<canvas id="stage" width="640" height="480"></canvas>
+
+	<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+	<script src="dist/bundle.js"></script>
+
+	<script>
+	(function(document){
+		var canvas = document.getElementById('stage');
+		var game = Tetris.start(canvas);
+	})(document);
+	</script>
+</body>
+
+</html>
