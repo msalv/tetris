@@ -55,7 +55,7 @@ const Figure = (() => {
 		}
 
 		rotate(degree) {
-			this.rotation = degree;
+			this.rotation += degree;
 			this.updateCache();
 		}
 	}
