@@ -95,14 +95,14 @@ var Figure = function () {
 		}, {
 			key: 'flip',
 			value: function flip() {
-				this.regX = this.getBounds().width / 2;
+				this.regX = Math.ceil(this.getTransformedBounds().width * 0.5);
 				this.scaleX = -1;
 				this.updateCache();
 			}
 		}, {
 			key: 'rotate',
 			value: function rotate(degree) {
-				this.rotation = degree;
+				this.rotation += degree;
 				this.updateCache();
 			}
 		}]);

@@ -9,7 +9,8 @@ var colors = exports.colors = {
 	GREEN: "#8BC34A",
 	YELLOW: "#FFC107",
 	PURPLE: "#9C27B0",
-	BLACK: "#000000"
+	BLACK: "#000000",
+	GRAY: "#212121"
 };
 
 var dimen = exports.dimen = {
