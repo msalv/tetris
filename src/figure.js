@@ -48,8 +48,7 @@ const Figure = (() => {
 
 			this.snapToPixel = true;
 			
-			const {x, y, width, height} = this.getBounds();
-			this.cache(x, y, width, height);
+			const {x, y, width, height} = this.getBounds().pad(R.dimen.STROKE, R.dimen.STROKE, R.dimen.STROKE, R.dimen.STROKE);
 
 		 	this.regXY = [
 			    { regX: 0, regY: 0 }, 
@@ -57,6 +56,8 @@ const Figure = (() => {
 			    { regX: width, regY: height }, 
 			    { regX: width, regY: 0 }
 			];
+
+			this.cache(x, y, width, height); // overrides bounds as well
 		}
 
 		updateReg() {
