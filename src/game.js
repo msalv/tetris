@@ -16,13 +16,14 @@ const Tetris = (() => {
 			this.figures = [];
 
 			this.setupGUI();
+			this.bindEvents();
 			
 			this.next = FiguresFactory.getInstance().produce();
 			this.current = FiguresFactory.getInstance().produce();
 
 			this.stage.update();
 
-			//createjs.Ticker.setInterval(1000);
+			createjs.Ticker.setInterval(1000);
 			createjs.Ticker.on("tick", (event) => this.tick(event));
 		}
 
@@ -76,8 +77,6 @@ const Tetris = (() => {
 		}
 
 		setupGUI() {
-			//this.stage.setBounds(0, 0, this.containerWidth, this.height);
-
 			//todo: add text labels, buttons, etc
 			
 			var rect = new createjs.Shape();
@@ -87,18 +86,51 @@ const Tetris = (() => {
 			//this.stage.cache(this.containerWidth, 0, this.width - this.containerWidth, this.height);
 		}
 
+		bindEvents() {
+			document.onkeydown = (e) => this.handleKeyDown(e);
+		}
+
+		handleKeyDown(event) {
+			event = event || window.event;
+
+			switch (event.keyCode) {
+				case R.keys.UP:
+					this.current.rotate();
+					break;
+
+				case R.keys.LEFT:
+					this.current.x -= R.dimen.BLOCK;
+					break;
+
+				case R.keys.RIGHT:
+					this.current.x += R.dimen.BLOCK;
+					break;
+
+				case R.keys.DOWN:
+					this.moveDown();
+					break;
+			}
+
+			this.stage.update();
+		}
+
 		tick(event) {
+			this.moveDown();
+
+			this.stage.update(event);
+		}
+
+		moveDown() {
 			this.current.y += R.dimen.BLOCK;
 
-			var bounds = this.current.getTransformedBounds();
+			var bounds = this.current.getBounds();
+			var d = (this.current.rotation / 90) % 2 == 0 ? bounds.height : bounds.width;
 
-			if ( this.current.y >= this.height - bounds.height ) {
-				this.current.y += (this.current.y - bounds.y);
+			if ( this.current.y >= this.height - d ) {
+				this.current.y = this.height - d;
 				this.current = this.next;
 				this.next = FiguresFactory.getInstance().produce();
 			}
-
-			this.stage.update(event);
 		}
 	}
 
