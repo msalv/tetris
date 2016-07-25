@@ -11,6 +11,7 @@ const Tetris = (() => {
 	class Tetris {
 		constructor(canvas) {
 			this.stage = new createjs.Stage(canvas);
+			this.stage.snapToPixelEnabled = true;
 
 			this.figures = [];
 
