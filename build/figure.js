@@ -67,6 +67,7 @@ var Figure = function () {
 			_this2.color = color;
 			_this2.velocity = 0;
 			_this2.coords = [];
+			_this2.regXY = [];
 			return _this2;
 		}
 
@@ -83,26 +84,44 @@ var Figure = function () {
 					this.addChild(block);
 				}
 
-				var _getBounds = this.getBounds();
+				this.snapToPixel = true;
 
-				var x = _getBounds.x;
-				var y = _getBounds.y;
-				var width = _getBounds.width;
-				var height = _getBounds.height;
+				var _getBounds$pad = this.getBounds().pad(R.dimen.STROKE, R.dimen.STROKE, R.dimen.STROKE, R.dimen.STROKE);
 
-				this.cache(x, y, width, height);
+				var x = _getBounds$pad.x;
+				var y = _getBounds$pad.y;
+				var width = _getBounds$pad.width;
+				var height = _getBounds$pad.height;
+
+
+				this.regXY = [{ regX: 0, regY: 0 }, { regX: 0, regY: height }, { regX: width, regY: height }, { regX: width, regY: 0 }];
+
+				this.cache(x, y, width, height); // overrides bounds as well
+			}
+		}, {
+			key: 'updateReg',
+			value: function updateReg() {
+				var i = this.rotation / 90;
+				if (this.scaleX < 0) {
+					i = this.regXY.length - 1 - i;
+				}
+				this.set(this.regXY[i]);
 			}
 		}, {
 			key: 'flip',
 			value: function flip() {
-				this.regX = Math.ceil(this.getTransformedBounds().width * 0.5);
-				this.scaleX = -1;
+				this.scaleX = -this.scaleX;
+
+				this.updateReg();
 				this.updateCache();
 			}
 		}, {
 			key: 'rotate',
-			value: function rotate(degree) {
-				this.rotation += degree;
+			value: function rotate() {
+				var rotation = this.rotation + 90;
+				this.rotation = rotation >= 360 ? 0 : rotation;
+
+				this.updateReg();
 				this.updateCache();
 			}
 		}]);

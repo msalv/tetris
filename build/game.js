@@ -30,17 +30,19 @@ var Tetris = function () {
 			_classCallCheck(this, Tetris);
 
 			this.stage = new createjs.Stage(canvas);
+			this.stage.snapToPixelEnabled = true;
 
 			this.figures = [];
 
 			this.setupGUI();
+			this.bindEvents();
 
 			this.next = _figure2.default.getInstance().produce();
 			this.current = _figure2.default.getInstance().produce();
 
 			this.stage.update();
 
-			//createjs.Ticker.setInterval(1000);
+			createjs.Ticker.setInterval(1000);
 			createjs.Ticker.on("tick", function (event) {
 				return _this.tick(event);
 			});
@@ -49,8 +51,6 @@ var Tetris = function () {
 		_createClass(Tetris, [{
 			key: 'setupGUI',
 			value: function setupGUI() {
-				//this.stage.setBounds(0, 0, this.containerWidth, this.height);
-
 				//todo: add text labels, buttons, etc
 
 				var rect = new createjs.Shape();
@@ -60,19 +60,59 @@ var Tetris = function () {
 				//this.stage.cache(this.containerWidth, 0, this.width - this.containerWidth, this.height);
 			}
 		}, {
+			key: 'bindEvents',
+			value: function bindEvents() {
+				var _this2 = this;
+
+				document.onkeydown = function (e) {
+					return _this2.handleKeyDown(e);
+				};
+			}
+		}, {
+			key: 'handleKeyDown',
+			value: function handleKeyDown(event) {
+				event = event || window.event;
+
+				switch (event.keyCode) {
+					case R.keys.UP:
+						this.current.rotate();
+						break;
+
+					case R.keys.LEFT:
+						this.current.x -= R.dimen.BLOCK;
+						break;
+
+					case R.keys.RIGHT:
+						this.current.x += R.dimen.BLOCK;
+						break;
+
+					case R.keys.DOWN:
+						this.moveDown();
+						break;
+				}
+
+				this.stage.update();
+			}
+		}, {
 			key: 'tick',
 			value: function tick(event) {
+				this.moveDown();
+
+				this.stage.update(event);
+			}
+		}, {
+			key: 'moveDown',
+			value: function moveDown() {
 				this.current.y += R.dimen.BLOCK;
 
-				var bounds = this.current.getTransformedBounds();
+				var bounds = this.current.getBounds();
+				var d = this.current.rotation / 90 % 2 == 0 ? bounds.height : bounds.width;
 
-				if (this.current.y >= this.height - bounds.height) {
-					this.current.y += this.current.y - bounds.y;
+				if (this.current.y >= this.height - d) {
+					this.current.y = this.height - d;
 					this.current = this.next;
 					this.next = _figure2.default.getInstance().produce();
 				}
-
-				this.stage.update(event);
 			}
 		}, {
 			key: 'height',

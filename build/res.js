@@ -14,6 +14,16 @@ var colors = exports.colors = {
 };
 
 var dimen = exports.dimen = {
-	BLOCK: 15,
+	BLOCK: 16,
 	STROKE: 2
+};
+
+var keys = exports.keys = {
+	ENTER: 13,
+	ESC: 27,
+	SPACE: 32,
+	UP: 38,
+	LEFT: 37,
+	RIGHT: 39,
+	DOWN: 40
 };
