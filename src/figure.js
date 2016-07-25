@@ -32,6 +32,7 @@ const Figure = (() => {
 			this.color = color;
 			this.velocity = 0;
 			this.coords = [];
+			this.regXY = [];
 		}
 
 		tick(event) {
@@ -44,18 +45,40 @@ const Figure = (() => {
 
 				this.addChild(block);
 			}
+
+			this.snapToPixel = true;
+			
 			const {x, y, width, height} = this.getBounds();
 			this.cache(x, y, width, height);
+
+		 	this.regXY = [
+			    { regX: 0, regY: 0 }, 
+			    { regX: 0, regY: height }, 
+			    { regX: width, regY: height }, 
+			    { regX: width, regY: 0 }
+			];
+		}
+
+		updateReg() {
+			var i = this.rotation / 90;
+			if (this.scaleX < 0) {
+				i = (this.regXY.length - 1) - i;
+			}
+			this.set(this.regXY[i]);
 		}
 
 		flip() {
-			this.regX = Math.ceil(this.getTransformedBounds().width * 0.5);
-			this.scaleX = -1;
+			this.scaleX = -this.scaleX;
+			
+			this.updateReg();
 			this.updateCache();
 		}
 
-		rotate(degree) {
-			this.rotation += degree;
+		rotate() {
+			var rotation = this.rotation + 90;
+			this.rotation = (rotation >= 360) ? 0 : rotation;
+
+			this.updateReg();
 			this.updateCache();
 		}
 	}
