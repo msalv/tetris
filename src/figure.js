@@ -162,7 +162,7 @@ const FiguresFactory = (() => {
 	];
 
 	const colors = [
-		R.colors.RED, R.colors.GREEN, R.colors.BLUE, R.colors.YELLOW, R.colors.PURPLE
+		R.colors.INDIGO, R.colors.RED, R.colors.LIME, R.colors.GREEN, R.colors.BLUE, R.colors.YELLOW, R.colors.PURPLE
 	];
 
 	const degrees = [0, 90, 180, 270];
