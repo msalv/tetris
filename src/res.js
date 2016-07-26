@@ -4,6 +4,8 @@ export const colors = {
 	GREEN:  "#8BC34A",
 	YELLOW: "#FFC107",
 	PURPLE: "#9C27B0",
+	LIME:   "#CDDC39",
+	INDIGO: "#3F51B5",
 	BLACK:  "#000000",
 	GRAY:   "#212121"
 };
