@@ -215,7 +215,7 @@ var TeeFigure = function (_Figure5) {
 var FiguresFactory = function () {
 	var classes = [SquareFigure, LFigure, ZFigure, LineFigure, TeeFigure];
 
-	var colors = [R.colors.RED, R.colors.GREEN, R.colors.BLUE, R.colors.YELLOW, R.colors.PURPLE];
+	var colors = [R.colors.INDIGO, R.colors.RED, R.colors.LIME, R.colors.GREEN, R.colors.BLUE, R.colors.YELLOW, R.colors.PURPLE];
 
 	var degrees = [0, 90, 180, 270];
 
