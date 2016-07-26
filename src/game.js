@@ -123,8 +123,7 @@ const Tetris = (() => {
 		moveDown() {
 			this.current.y += R.dimen.BLOCK;
 
-			var bounds = this.current.getBounds();
-			var d = (this.current.rotation / 90) % 2 == 0 ? bounds.height : bounds.width;
+			var d = this.current.height;
 
 			if ( this.current.y >= this.height - d + 1) {
 				this.current.y = this.height - d + 1;
