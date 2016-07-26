@@ -65,8 +65,8 @@ const Tetris = (() => {
 		}
 
 		set next(figure) {
-			figure.x = this.fieldWidth + this.sidebarWidth / 2;
-			figure.y = 100;
+			figure.x = this.fieldWidth + this.sidebarWidth / 2 - figure.width / 2;
+			figure.y = 50;
 			this.stage.addChild(figure);
 
 			_next = figure;
