@@ -42,12 +42,12 @@ const Tetris = (() => {
 			return this.stage.canvas.width;
 		}
 
-		get containerWidth() {
-			return Math.ceil(this.width * 0.75);
+		get fieldWidth() {
+			return R.dimen.FIELD_W * R.dimen.BLOCK;
 		}
 
 		get sidebarWidth() {
-			return this.width - this.containerWidth;
+			return this.width - this.fieldWidth;
 		}
 
 		set current(figure) {
@@ -65,7 +65,7 @@ const Tetris = (() => {
 		}
 
 		set next(figure) {
-			figure.x = this.containerWidth + this.sidebarWidth / 2;
+			figure.x = this.fieldWidth + this.sidebarWidth / 2;
 			figure.y = 100;
 			this.stage.addChild(figure);
 
@@ -80,10 +80,10 @@ const Tetris = (() => {
 			//todo: add text labels, buttons, etc
 			
 			var rect = new createjs.Shape();
-			rect.graphics.beginFill(R.colors.GRAY).drawRect(this.containerWidth, 0, this.sidebarWidth, this.height);
+			rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth, 0, this.sidebarWidth, this.height);
 			this.stage.addChild(rect);
 
-			//this.stage.cache(this.containerWidth, 0, this.width - this.containerWidth, this.height);
+			//this.stage.cache(this.fieldWidth, 0, this.width - this.fieldWidth, this.height);
 		}
 
 		bindEvents() {
