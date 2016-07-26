@@ -9,13 +9,18 @@ var colors = exports.colors = {
 	GREEN: "#8BC34A",
 	YELLOW: "#FFC107",
 	PURPLE: "#9C27B0",
+	LIME: "#CDDC39",
+	INDIGO: "#3F51B5",
 	BLACK: "#000000",
 	GRAY: "#212121"
 };
 
 var dimen = exports.dimen = {
 	BLOCK: 16,
-	STROKE: 2
+	STROKE: 2,
+	STEP: 20, // 16 + 2*2
+	FIELD_W: 10,
+	FIELD_H: 20
 };
 
 var keys = exports.keys = {

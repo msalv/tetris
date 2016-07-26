@@ -54,10 +54,10 @@ var Tetris = function () {
 				//todo: add text labels, buttons, etc
 
 				var rect = new createjs.Shape();
-				rect.graphics.beginFill(R.colors.GRAY).drawRect(this.containerWidth, 0, this.sidebarWidth, this.height);
+				rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth, 0, this.sidebarWidth, this.height);
 				this.stage.addChild(rect);
 
-				//this.stage.cache(this.containerWidth, 0, this.width - this.containerWidth, this.height);
+				//this.stage.cache(this.fieldWidth, 0, this.width - this.fieldWidth, this.height);
 			}
 		}, {
 			key: 'bindEvents',
@@ -108,8 +108,8 @@ var Tetris = function () {
 				var bounds = this.current.getBounds();
 				var d = this.current.rotation / 90 % 2 == 0 ? bounds.height : bounds.width;
 
-				if (this.current.y >= this.height - d) {
-					this.current.y = this.height - d;
+				if (this.current.y >= this.height - d + 1) {
+					this.current.y = this.height - d + 1;
 					this.current = this.next;
 					this.next = _figure2.default.getInstance().produce();
 				}
@@ -125,19 +125,19 @@ var Tetris = function () {
 				return this.stage.canvas.width;
 			}
 		}, {
-			key: 'containerWidth',
+			key: 'fieldWidth',
 			get: function get() {
-				return Math.ceil(this.width * 0.75);
+				return R.dimen.FIELD_W * R.dimen.BLOCK;
 			}
 		}, {
 			key: 'sidebarWidth',
 			get: function get() {
-				return this.width - this.containerWidth;
+				return this.width - this.fieldWidth;
 			}
 		}, {
 			key: 'current',
 			set: function set(figure) {
-				figure.x = this.containerWidth / 2;
+				figure.x = this.fieldWidth / 2 - 1;
 				figure.y = 0;
 
 				this.figures.push(figure);
@@ -151,7 +151,7 @@ var Tetris = function () {
 		}, {
 			key: 'next',
 			set: function set(figure) {
-				figure.x = this.containerWidth + this.sidebarWidth / 2;
+				figure.x = this.fieldWidth + this.sidebarWidth / 2;
 				figure.y = 100;
 				this.stage.addChild(figure);
 

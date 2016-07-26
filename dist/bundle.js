@@ -92,9 +92,9 @@ var Block = function () {
 		_createClass(Block, [{
 			key: 'setup',
 			value: function setup() {
-				this.graphics.clear().setStrokeStyle(R.dimen.STROKE).beginStroke(R.colors.BLACK).beginFill(this.color).drawRect(0, 0, R.dimen.BLOCK, R.dimen.BLOCK);
+				this.graphics.clear().setStrokeStyle(R.dimen.STROKE).beginStroke(R.colors.BLACK).beginFill(this.color).drawRect(R.dimen.STROKE, R.dimen.STROKE, R.dimen.BLOCK, R.dimen.BLOCK);
 
-				this.setBounds(0, 0, R.dimen.BLOCK, R.dimen.BLOCK);
+				this.setBounds(R.dimen.STROKE, R.dimen.STROKE, R.dimen.BLOCK, R.dimen.BLOCK);
 			}
 		}]);
 
@@ -263,7 +263,7 @@ var TeeFigure = function (_Figure5) {
 var FiguresFactory = function () {
 	var classes = [SquareFigure, LFigure, ZFigure, LineFigure, TeeFigure];
 
-	var colors = [R.colors.RED, R.colors.GREEN, R.colors.BLUE, R.colors.YELLOW, R.colors.PURPLE];
+	var colors = [R.colors.INDIGO, R.colors.RED, R.colors.LIME, R.colors.GREEN, R.colors.BLUE, R.colors.YELLOW, R.colors.PURPLE];
 
 	var degrees = [0, 90, 180, 270];
 
@@ -389,10 +389,10 @@ var Tetris = function () {
 				//todo: add text labels, buttons, etc
 
 				var rect = new createjs.Shape();
-				rect.graphics.beginFill(R.colors.GRAY).drawRect(this.containerWidth, 0, this.sidebarWidth, this.height);
+				rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth, 0, this.sidebarWidth, this.height);
 				this.stage.addChild(rect);
 
-				//this.stage.cache(this.containerWidth, 0, this.width - this.containerWidth, this.height);
+				//this.stage.cache(this.fieldWidth, 0, this.width - this.fieldWidth, this.height);
 			}
 		}, {
 			key: 'bindEvents',
@@ -443,8 +443,8 @@ var Tetris = function () {
 				var bounds = this.current.getBounds();
 				var d = this.current.rotation / 90 % 2 == 0 ? bounds.height : bounds.width;
 
-				if (this.current.y >= this.height - d) {
-					this.current.y = this.height - d;
+				if (this.current.y >= this.height - d + 1) {
+					this.current.y = this.height - d + 1;
 					this.current = this.next;
 					this.next = _figure2.default.getInstance().produce();
 				}
@@ -460,19 +460,19 @@ var Tetris = function () {
 				return this.stage.canvas.width;
 			}
 		}, {
-			key: 'containerWidth',
+			key: 'fieldWidth',
 			get: function get() {
-				return Math.ceil(this.width * 0.75);
+				return R.dimen.FIELD_W * R.dimen.BLOCK;
 			}
 		}, {
 			key: 'sidebarWidth',
 			get: function get() {
-				return this.width - this.containerWidth;
+				return this.width - this.fieldWidth;
 			}
 		}, {
 			key: 'current',
 			set: function set(figure) {
-				figure.x = this.containerWidth / 2;
+				figure.x = this.fieldWidth / 2 - 1;
 				figure.y = 0;
 
 				this.figures.push(figure);
@@ -486,7 +486,7 @@ var Tetris = function () {
 		}, {
 			key: 'next',
 			set: function set(figure) {
-				figure.x = this.containerWidth + this.sidebarWidth / 2;
+				figure.x = this.fieldWidth + this.sidebarWidth / 2;
 				figure.y = 100;
 				this.stage.addChild(figure);
 
@@ -526,13 +526,18 @@ var colors = exports.colors = {
 	GREEN: "#8BC34A",
 	YELLOW: "#FFC107",
 	PURPLE: "#9C27B0",
+	LIME: "#CDDC39",
+	INDIGO: "#3F51B5",
 	BLACK: "#000000",
 	GRAY: "#212121"
 };
 
 var dimen = exports.dimen = {
 	BLOCK: 16,
-	STROKE: 2
+	STROKE: 2,
+	STEP: 20, // 16 + 2*2
+	FIELD_W: 10,
+	FIELD_H: 20
 };
 
 var keys = exports.keys = {
