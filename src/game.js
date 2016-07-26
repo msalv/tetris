@@ -96,14 +96,17 @@ const Tetris = (() => {
 			switch (event.keyCode) {
 				case R.keys.UP:
 					this.current.rotate();
+					if ( this.current.x >= this.fieldWidth - this.current.width ) {
+						this.current.x = this.fieldWidth - this.current.width + 2*R.dimen.STROKE*0.75;
+					}
 					break;
 
 				case R.keys.LEFT:
-					this.current.x -= R.dimen.BLOCK;
+					this.moveLeft();
 					break;
 
 				case R.keys.RIGHT:
-					this.current.x += R.dimen.BLOCK;
+					this.moveRight();
 					break;
 
 				case R.keys.DOWN:
@@ -125,10 +128,22 @@ const Tetris = (() => {
 
 			var d = this.current.height;
 
-			if ( this.current.y >= this.height - d + 1) {
-				this.current.y = this.height - d + 1;
+			if ( this.current.y >= this.height - d + R.dimen.STROKE*0.5) {
+				this.current.y = this.height - d + R.dimen.STROKE*0.5;
 				this.current = this.next;
 				this.next = FiguresFactory.getInstance().produce();
+			}
+		}
+
+		moveLeft() {
+			if ( this.current.x > 0) {
+				this.current.x -= R.dimen.BLOCK;
+			}
+		}
+
+		moveRight() {
+			if ( this.current.x < this.fieldWidth - this.current.width ) {
+				this.current.x += R.dimen.BLOCK;
 			}
 		}
 	}
