@@ -112,6 +112,10 @@ const Tetris = (() => {
 				case R.keys.DOWN:
 					this.moveDown();
 					break;
+
+				case R.keys.SPACE:
+					this.moveDown(true);
+					break;
 			}
 
 			this.stage.update();
@@ -119,17 +123,18 @@ const Tetris = (() => {
 
 		tick(event) {
 			this.moveDown();
+			// todo: this.removeLines();
 
 			this.stage.update(event);
 		}
 
-		moveDown() {
+		moveDown(fall = false) {
+			var threshold = this.height - this.current.height + R.dimen.STROKE*0.5;
+
 			this.current.y += R.dimen.BLOCK;
 
-			var d = this.current.height;
-
-			if ( this.current.y >= this.height - d + R.dimen.STROKE*0.5) {
-				this.current.y = this.height - d + R.dimen.STROKE*0.5;
+			if ( this.current.y >= threshold || fall) {
+				this.current.y = threshold; // stick to bottom
 				this.current = this.next;
 				this.next = FiguresFactory.getInstance().produce();
 			}
