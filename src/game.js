@@ -51,7 +51,7 @@ const Tetris = (() => {
 		}
 
 		set current(figure) {
-			figure.x = this.containerWidth / 2;
+			figure.x = this.fieldWidth / 2 - 1;
 			figure.y = 0;
 			
 			this.figures.push(figure);
