@@ -82,6 +82,16 @@ const Figure = (() => {
 			this.updateReg();
 			this.updateCache();
 		}
+
+		get width() {
+			var bounds = this.getBounds();
+			return (this.rotation / 90) % 2 == 0 ? bounds.width : bounds.height;
+		}
+
+		get height() {
+			var bounds = this.getBounds();
+			return (this.rotation / 90) % 2 == 0 ? bounds.height : bounds.width;
+		}
 	}
 	 
 	return createjs.promote(Figure, "Container");
