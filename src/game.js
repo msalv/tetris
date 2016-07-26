@@ -126,8 +126,8 @@ const Tetris = (() => {
 			var bounds = this.current.getBounds();
 			var d = (this.current.rotation / 90) % 2 == 0 ? bounds.height : bounds.width;
 
-			if ( this.current.y >= this.height - d ) {
-				this.current.y = this.height - d;
+			if ( this.current.y >= this.height - d + 1) {
+				this.current.y = this.height - d + 1;
 				this.current = this.next;
 				this.next = FiguresFactory.getInstance().produce();
 			}
