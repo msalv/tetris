@@ -15,9 +15,9 @@ const Block = (() => {
 				.setStrokeStyle(R.dimen.STROKE)
 				.beginStroke(R.colors.BLACK)
 				.beginFill(this.color)
-				.drawRect(0, 0, R.dimen.BLOCK, R.dimen.BLOCK);
+				.drawRect(R.dimen.STROKE, R.dimen.STROKE, R.dimen.BLOCK, R.dimen.BLOCK);
 
-			this.setBounds(0, 0, R.dimen.BLOCK, R.dimen.BLOCK);
+			this.setBounds(R.dimen.STROKE, R.dimen.STROKE, R.dimen.BLOCK, R.dimen.BLOCK);
 		}
 	}
 	 
