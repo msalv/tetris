@@ -124,6 +124,18 @@ var Figure = function () {
 				this.updateReg();
 				this.updateCache();
 			}
+		}, {
+			key: 'width',
+			get: function get() {
+				var bounds = this.getBounds();
+				return this.rotation / 90 % 2 == 0 ? bounds.width : bounds.height;
+			}
+		}, {
+			key: 'height',
+			get: function get() {
+				var bounds = this.getBounds();
+				return this.rotation / 90 % 2 == 0 ? bounds.height : bounds.width;
+			}
 		}]);
 
 		return Figure;

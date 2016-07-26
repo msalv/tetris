@@ -18,7 +18,6 @@ var colors = exports.colors = {
 var dimen = exports.dimen = {
 	BLOCK: 16,
 	STROKE: 2,
-	STEP: 20, // 16 + 2*2
 	FIELD_W: 10,
 	FIELD_H: 20
 };

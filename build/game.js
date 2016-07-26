@@ -76,14 +76,17 @@ var Tetris = function () {
 				switch (event.keyCode) {
 					case R.keys.UP:
 						this.current.rotate();
+						if (this.current.x >= this.fieldWidth - this.current.width) {
+							this.current.x = this.fieldWidth - this.current.width + 2 * R.dimen.STROKE * 0.75;
+						}
 						break;
 
 					case R.keys.LEFT:
-						this.current.x -= R.dimen.BLOCK;
+						this.moveLeft();
 						break;
 
 					case R.keys.RIGHT:
-						this.current.x += R.dimen.BLOCK;
+						this.moveRight();
 						break;
 
 					case R.keys.DOWN:
@@ -105,13 +108,26 @@ var Tetris = function () {
 			value: function moveDown() {
 				this.current.y += R.dimen.BLOCK;
 
-				var bounds = this.current.getBounds();
-				var d = this.current.rotation / 90 % 2 == 0 ? bounds.height : bounds.width;
+				var d = this.current.height;
 
-				if (this.current.y >= this.height - d + 1) {
-					this.current.y = this.height - d + 1;
+				if (this.current.y >= this.height - d + R.dimen.STROKE * 0.5) {
+					this.current.y = this.height - d + R.dimen.STROKE * 0.5;
 					this.current = this.next;
 					this.next = _figure2.default.getInstance().produce();
+				}
+			}
+		}, {
+			key: 'moveLeft',
+			value: function moveLeft() {
+				if (this.current.x > 0) {
+					this.current.x -= R.dimen.BLOCK;
+				}
+			}
+		}, {
+			key: 'moveRight',
+			value: function moveRight() {
+				if (this.current.x < this.fieldWidth - this.current.width) {
+					this.current.x += R.dimen.BLOCK;
 				}
 			}
 		}, {
@@ -151,8 +167,8 @@ var Tetris = function () {
 		}, {
 			key: 'next',
 			set: function set(figure) {
-				figure.x = this.fieldWidth + this.sidebarWidth / 2;
-				figure.y = 100;
+				figure.x = this.fieldWidth + this.sidebarWidth / 2 - figure.width / 2;
+				figure.y = 50;
 				this.stage.addChild(figure);
 
 				_next = figure;
