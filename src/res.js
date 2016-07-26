@@ -11,8 +11,10 @@ export const colors = {
 };
 
 export const dimen = {
-	BLOCK: 16,
-	STROKE: 2
+	BLOCK:   16,
+	STROKE:   2,
+	FIELD_W: 10,
+	FIELD_H: 20
 };
 
 export const keys = {
