@@ -32,7 +32,7 @@ var Tetris = function () {
 
 		var block = _figure2.default.getInstance().produce().getChildAt(0);
 
-		block.color = "#FFFFFF";
+		block.color = R.colors.WHITE;
 		block.alpha = 0.3;
 		block.setup();
 
@@ -49,36 +49,64 @@ var Tetris = function () {
 
 	var Tetris = function () {
 		function Tetris(canvas) {
-			var _this = this;
-
 			_classCallCheck(this, Tetris);
 
-			canvas.width += R.dimen.STROKE * 0.5;
-			canvas.height += R.dimen.STROKE;
+			canvas.width = (R.dimen.FIELD_W + R.dimen.SIDEBAR_W) * R.dimen.BLOCK + R.dimen.STROKE * 0.5;
+			canvas.height = R.dimen.FIELD_H * R.dimen.BLOCK + R.dimen.STROKE;
 
 			this.stage = new createjs.Stage(canvas);
 			this.stage.snapToPixelEnabled = true;
 
 			this.field = new createjs.Container();
+			this.placeholder = new createjs.Container();
 
-			this.setupGUI();
-
-			this.figures = [];
+			this.score = null;
+			this.hiscore = null;
+			this.overlay = null;
 
 			this.bindEvents();
-
-			this.next = _figure2.default.getInstance().produce();
-			this.current = _figure2.default.getInstance().produce();
-
-			this.stage.update();
-
-			createjs.Ticker.setInterval(1000);
-			createjs.Ticker.on("tick", function (event) {
-				return _this.tick(event);
-			});
+			this.restart();
 		}
 
 		_createClass(Tetris, [{
+			key: 'pause',
+			value: function pause() {
+				createjs.Ticker.removeAllEventListeners("tick");
+				this.paused = true;
+				this.showPauseOverlay();
+			}
+		}, {
+			key: 'unpause',
+			value: function unpause() {
+				var _this = this;
+
+				createjs.Ticker.on("tick", function (event) {
+					return _this.tick(event);
+				});
+				this.paused = false;
+				this.hidePauseOverlay();
+			}
+		}, {
+			key: 'restart',
+			value: function restart() {
+				this.pause();
+
+				this.field.removeAllChildren();
+				this.placeholder.removeAllChildren();
+				this.stage.removeAllChildren();
+
+				this.setupGUI();
+
+				this.next = _figure2.default.getInstance().produce();
+				this.current = _figure2.default.getInstance().produce();
+
+				this.stage.update();
+
+				createjs.Ticker.setInterval(1000);
+
+				this.unpause();
+			}
+		}, {
 			key: 'setupGUI',
 			value: function setupGUI() {
 				//todo: add text labels, buttons, etc
@@ -87,15 +115,52 @@ var Tetris = function () {
 					drawDebugGrid.call(this);
 				}
 
-				this.field.x = -1;
-				this.field.y = -1;
+				this.field.set({ x: -1, y: -1 });
 				this.stage.addChild(this.field);
+
+				this.placeholder.set({ x: -1, y: -1 });
+				this.stage.addChild(this.placeholder);
 
 				var rect = new createjs.Shape();
 				rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth + R.dimen.STROKE, 0, this.sidebarWidth, this.height);
 				this.stage.addChild(rect);
 
+				this.setText();
+
 				//this.stage.cache(this.fieldWidth, 0, this.width - this.fieldWidth, this.height);
+			}
+		}, {
+			key: 'showPauseOverlay',
+			value: function showPauseOverlay() {
+				if (this.overlay !== null) {
+					this.stage.addChild(this.overlay);
+					return;
+				}
+
+				this.overlay = new createjs.Container();
+
+				var shape = new createjs.Shape();
+				shape.graphics.clear().beginFill(R.colors.WHITE).drawRect(0, 0, this.width, this.height);
+
+				shape.alpha = 0.8;
+
+				this.overlay.addChild(shape);
+
+				var text = new createjs.Text(R.strings.PAUSED, R.dimen.TEXT_LARGE, R.colors.BLACK);
+				var b = text.getBounds();
+				text.set({
+					x: this.fieldWidth / 2 - b.width / 2,
+					y: this.height / 2 - b.height / 2
+				});
+
+				this.overlay.addChild(text);
+
+				this.stage.addChild(this.overlay);
+			}
+		}, {
+			key: 'hidePauseOverlay',
+			value: function hidePauseOverlay() {
+				this.stage.removeChild(this.overlay);
 			}
 		}, {
 			key: 'bindEvents',
@@ -107,9 +172,43 @@ var Tetris = function () {
 				};
 			}
 		}, {
+			key: 'setText',
+			value: function setText() {
+				var _this3 = this;
+
+				var third = this.height / 3;
+
+				var strings = [{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: 20 }, { text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: third + 20 }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: third + 40, label: "score" }, { text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: this.height - third }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + 25, label: "hiscore" }];
+
+				var x = this.fieldWidth + this.sidebarWidth / 2;
+
+				strings.forEach(function (s, i) {
+					var t = new createjs.Text(s.text, s.size, R.colors.WHITE);
+					var b = t.getBounds();
+					t.set({
+						x: x - b.width / 2,
+						y: i * b.height + s.y
+					});
+
+					_this3.stage.addChild(t);
+
+					if (s.label) {
+						_this3[s.label] = t;
+					}
+				});
+			}
+		}, {
 			key: 'handleKeyDown',
 			value: function handleKeyDown(event) {
 				event = event || window.event;
+
+				if (this.paused) {
+					if (event.keyCode == R.keys.ESC) {
+						this.unpause();
+						this.stage.update();
+					}
+					return;
+				}
 
 				switch (event.keyCode) {
 					case R.keys.UP:
@@ -118,6 +217,11 @@ var Tetris = function () {
 						var threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
 						if (this.current.x >= threshold) {
 							this.current.x = threshold;
+						}
+
+						// todo: come up with something smarter than just reverse rotation
+						if (this.hitTest()) {
+							this.current.rotate(false);
 						}
 						break;
 
@@ -134,11 +238,31 @@ var Tetris = function () {
 						break;
 
 					case R.keys.SPACE:
-						this.moveDown(true);
+						this.fallDown();
+						break;
+
+					case R.keys.ESC:
+						this.pause();
 						break;
 				}
 
 				this.stage.update();
+			}
+		}, {
+			key: 'hitTest',
+			value: function hitTest() {
+				var blocks = this.current.numChildren;
+
+				for (var i = 0; i < blocks; ++i) {
+					var b = this.current.getChildAt(i);
+					var pt = b.localToLocal(b.center.x, b.center.y, this.field);
+
+					if (this.field.hitTest(pt.x, pt.y)) {
+						return true;
+					}
+				}
+
+				return false;
 			}
 		}, {
 			key: 'tick',
@@ -149,32 +273,75 @@ var Tetris = function () {
 				this.stage.update(event);
 			}
 		}, {
+			key: 'swap',
+			value: function swap() {
+				this.placeholder.removeChildAt(0);
+				this.field.addChild(this.current);
+
+				this.current = this.next;
+				this.next = _figure2.default.getInstance().produce();
+
+				if (this.hitTest()) {
+					// todo: update high score
+					this.restart();
+				}
+			}
+		}, {
 			key: 'moveDown',
 			value: function moveDown() {
-				var fall = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
-
 				var threshold = this.height - this.current.height + R.dimen.STROKE;
 
 				this.current.y += R.dimen.BLOCK;
 
-				if (this.current.y >= threshold || fall) {
+				if (this.hitTest()) {
+					this.current.y -= R.dimen.BLOCK;
+					this.swap();
+				} else if (this.current.y >= threshold) {
 					this.current.y = threshold; // stick to bottom
-					this.current = this.next;
-					this.next = _figure2.default.getInstance().produce();
+
+					this.swap();
 				}
+			}
+		}, {
+			key: 'fallDown',
+			value: function fallDown() {
+				var threshold = this.height - this.current.height + R.dimen.STROKE;
+
+				while (!this.hitTest()) {
+					this.current.y += R.dimen.BLOCK;
+					if (this.current.y >= threshold + R.dimen.BLOCK) {
+						this.current.y = threshold + R.dimen.BLOCK;
+						break;
+					}
+				}
+
+				this.current.y -= R.dimen.BLOCK;
+				this.swap();
 			}
 		}, {
 			key: 'moveLeft',
 			value: function moveLeft() {
-				if (this.current.x > 0) {
+				var x = this.current.x;
+
+				if (x > 0) {
 					this.current.x -= R.dimen.BLOCK;
+
+					if (this.hitTest()) {
+						this.current.x = x;
+					}
 				}
 			}
 		}, {
 			key: 'moveRight',
 			value: function moveRight() {
-				if (this.current.x < this.fieldWidth - this.current.width) {
+				var x = this.current.x;
+
+				if (x < this.fieldWidth - this.current.width) {
 					this.current.x += R.dimen.BLOCK;
+
+					if (this.hitTest()) {
+						this.current.x = x;
+					}
 				}
 			}
 		}, {
@@ -203,8 +370,7 @@ var Tetris = function () {
 				figure.x = this.fieldWidth / 2;
 				figure.y = 0;
 
-				this.figures.push(figure);
-				this.field.addChild(figure);
+				this.placeholder.addChild(figure);
 
 				_current = figure;
 			},
@@ -217,7 +383,7 @@ var Tetris = function () {
 				figure.x = this.fieldWidth + this.sidebarWidth / 2 - figure.width / 2;
 				figure.y = 50;
 
-				this.field.addChild(figure);
+				this.stage.addChild(figure);
 
 				_next = figure;
 			},

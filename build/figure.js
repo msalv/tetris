@@ -47,6 +47,12 @@ var Block = function () {
 
 				this.setBounds(R.dimen.STROKE, R.dimen.STROKE, R.dimen.BLOCK, R.dimen.BLOCK);
 			}
+		}, {
+			key: 'center',
+			get: function get() {
+				var b = this.getBounds();
+				return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+			}
 		}]);
 
 		return Block;
@@ -118,8 +124,12 @@ var Figure = function () {
 		}, {
 			key: 'rotate',
 			value: function rotate() {
-				var rotation = this.rotation + 90;
-				this.rotation = rotation >= 360 ? 0 : rotation;
+				var clockwise = arguments.length <= 0 || arguments[0] === undefined ? true : arguments[0];
+
+				var degree = clockwise ? 90 : -90;
+				var rotation = this.rotation + degree;
+
+				this.rotation = rotation >= 360 ? 0 : rotation < 0 ? 270 : rotation;
 
 				this.updateReg();
 				this.updateCache();

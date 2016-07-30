@@ -12,14 +12,19 @@ var colors = exports.colors = {
 	LIME: "#CDDC39",
 	INDIGO: "#3F51B5",
 	BLACK: "#000000",
+	WHITE: "#FFFFFF",
 	GRAY: "#212121"
 };
 
 var dimen = exports.dimen = {
-	BLOCK: 16,
-	STROKE: 2,
-	FIELD_W: 10,
-	FIELD_H: 20
+	BLOCK: 32,
+	STROKE: 4,
+	FIELD_W: 10, // blocks
+	FIELD_H: 20, // blocks
+	SIDEBAR_W: 5, // blocks
+	TEXT_BIG: "20px Roboto Mono",
+	TEXT_SMALL: "16px Roboto Mono",
+	TEXT_LARGE: "42px Roboto Mono"
 };
 
 var keys = exports.keys = {
@@ -30,4 +35,12 @@ var keys = exports.keys = {
 	LEFT: 37,
 	RIGHT: 39,
 	DOWN: 40
+};
+
+var strings = exports.strings = {
+	NEXT: "next",
+	SCORE: "score",
+	HISCORE: "hi-score",
+	ZEROS: "0000000",
+	PAUSED: "paused"
 };
