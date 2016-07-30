@@ -254,7 +254,7 @@ const Tetris = (() => {
 
 			while ( !this.hitTest() ) {
 				this.current.y += R.dimen.BLOCK;
-				if ( this.current.y >= threshold) {
+				if ( this.current.y >= threshold + R.dimen.BLOCK) {
 					this.current.y = threshold + R.dimen.BLOCK;
 					break;
 				}
