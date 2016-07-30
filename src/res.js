@@ -18,7 +18,8 @@ export const dimen = {
 	FIELD_H: 20, // blocks
 	SIDEBAR_W: 5, // blocks
 	TEXT_BIG: "20px Roboto Mono",
-	TEXT_SMALL: "16px Roboto Mono"
+	TEXT_SMALL: "16px Roboto Mono",
+	TEXT_LARGE: "42px Roboto Mono",
 };
 
 export const keys = {

@@ -45,6 +45,7 @@ const Tetris = (() => {
 
 			this.score = null;
 			this.hiscore = null;
+			this.overlay = null;
 
 			this.bindEvents();
 			this.restart();
@@ -60,11 +61,13 @@ const Tetris = (() => {
 		pause() {
 			createjs.Ticker.removeAllEventListeners("tick");
 			this.paused = true;
+			this.showPauseOverlay();
 		}
 
 		unpause() {
 			createjs.Ticker.on("tick", (event) => this.tick(event));
 			this.paused = false;
+			this.hidePauseOverlay();
 		}
 
 		restart() {
@@ -150,6 +153,39 @@ const Tetris = (() => {
 			//this.stage.cache(this.fieldWidth, 0, this.width - this.fieldWidth, this.height);
 		}
 
+		showPauseOverlay() {
+			if ( this.overlay !== null ) {
+				this.stage.addChild(this.overlay);
+				return;
+			}
+
+			this.overlay = new createjs.Container();
+
+			var shape = new createjs.Shape();
+			shape.graphics.clear()
+				.beginFill(R.colors.WHITE)
+				.drawRect(0, 0, this.width, this.height);
+
+			shape.alpha = 0.8;
+
+			this.overlay.addChild(shape);
+
+			var text = new createjs.Text(R.strings.PAUSED, R.dimen.TEXT_LARGE, R.colors.BLACK);
+			var b = text.getBounds()
+			text.set({
+				x: this.fieldWidth / 2 - b.width / 2,
+				y: this.height / 2 - b.height / 2
+			})
+
+			this.overlay.addChild(text);
+
+			this.stage.addChild(this.overlay);
+		}
+
+		hidePauseOverlay() {
+			this.stage.removeChild(this.overlay);
+		}
+
 		bindEvents() {
 			document.onkeydown = (e) => this.handleKeyDown(e);
 		}
@@ -189,6 +225,7 @@ const Tetris = (() => {
 			if ( this.paused ) {
 				if ( event.keyCode == R.keys.ESC ) {
 					this.unpause();
+					this.stage.update();
 				}
 				return;
 			}
