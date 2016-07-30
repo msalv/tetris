@@ -139,6 +139,11 @@ const Tetris = (() => {
 					if ( this.current.x >= threshold ) {
 						this.current.x = threshold;
 					}
+
+					// todo: come up with something smarter than just reverse rotation
+					if ( this.hitTest() ) {
+						this.current.rotate(false);
+					}
 					break;
 
 				case R.keys.LEFT:
@@ -154,11 +159,26 @@ const Tetris = (() => {
 					break;
 
 				case R.keys.SPACE:
-					this.moveDown(true);
+					this.fallDown();
 					break;
 			}
 
 			this.stage.update();
+		}
+
+		hitTest() {
+			const blocks = this.current.numChildren;
+
+			for (let i = 0; i < blocks; ++i) {
+				let b = this.current.getChildAt(i);
+				var pt = b.localToLocal(b.center.x, b.center.y, this.field);
+				
+				if ( this.field.hitTest(pt.x, pt.y) ) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		tick(event) {
@@ -168,27 +188,66 @@ const Tetris = (() => {
 			this.stage.update(event);
 		}
 
-		moveDown(fall = false) {
+		swap() {
+			this.placeholder.removeChildAt(0);
+			this.field.addChild(this.current);
+
+			this.current = this.next;
+			this.next = FiguresFactory.getInstance().produce();
+		}
+
+		moveDown() {
 			var threshold = this.height - this.current.height + R.dimen.STROKE;
 
 			this.current.y += R.dimen.BLOCK;
 
-			if ( this.current.y >= threshold || fall) {
+			if ( this.hitTest() ) {
+				this.current.y -= R.dimen.BLOCK;
+				this.swap();
+			}
+			else if ( this.current.y >= threshold) {
 				this.current.y = threshold; // stick to bottom
-				this.current = this.next;
-				this.next = FiguresFactory.getInstance().produce();
+				
+				this.swap();
 			}
 		}
 
+		fallDown() {
+			var threshold = this.height - this.current.height + R.dimen.STROKE;
+
+			while ( !this.hitTest() ) {
+				this.current.y += R.dimen.BLOCK;
+				if ( this.current.y >= threshold) {
+					this.current.y = threshold + R.dimen.BLOCK;
+					break;
+				}
+			}
+
+			this.current.y -= R.dimen.BLOCK;
+			this.swap();
+		}
+
 		moveLeft() {
-			if ( this.current.x > 0) {
+			const x = this.current.x;
+
+			if ( x > 0) {
 				this.current.x -= R.dimen.BLOCK;
+				
+				if ( this.hitTest() ) {
+					this.current.x = x;
+				}
 			}
 		}
 
 		moveRight() {
-			if ( this.current.x < this.fieldWidth - this.current.width ) {
+			const x = this.current.x;
+
+			if ( x < this.fieldWidth - this.current.width ) {
 				this.current.x += R.dimen.BLOCK;
+
+				if ( this.hitTest() ) {
+					this.current.x = x;
+				}
 			}
 		}
 	}
