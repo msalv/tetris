@@ -10,8 +10,6 @@ body {
 
 canvas {
 	display: block;
-	width: 320px;
-	height: 400px;
 	margin: 0 auto;
 	background-color: #ffffff;
 }
