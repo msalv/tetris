@@ -43,6 +43,7 @@ const Tetris = (() => {
 			this.field = new createjs.Container();
 			this.placeholder = new createjs.Container();
 
+			this.bindEvents();
 			this.restart();
 		}
 
@@ -64,12 +65,13 @@ const Tetris = (() => {
 		}
 
 		restart() {
+			this.pause();
+
 			this.field.removeAllChildren();
 			this.placeholder.removeAllChildren();
 			this.stage.removeAllChildren();
 
 			this.setupGUI();
-			this.bindEvents();
 			
 			this.next = FiguresFactory.getInstance().produce();
 			this.current = FiguresFactory.getInstance().produce();
@@ -77,6 +79,7 @@ const Tetris = (() => {
 			this.stage.update();
 
 			createjs.Ticker.setInterval(1000);
+
 			this.unpause();
 		}
 
