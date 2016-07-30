@@ -370,18 +370,48 @@ var Tetris = function () {
 	var _current = null;
 	var _next = null;
 
+	var DEBUG = false;
+
+	function drawDebugGrid() {
+		var grid = new createjs.Container();
+		grid.x = -1;
+		grid.y = -1;
+
+		var block = _figure2.default.getInstance().produce().getChildAt(0);
+
+		block.color = "#FFFFFF";
+		block.alpha = 0.3;
+		block.setup();
+
+		for (var i = 0; i < this.width / R.dimen.BLOCK; ++i) {
+			for (var j = 0; j < this.height / R.dimen.BLOCK; ++j) {
+				var b = block.clone();
+				b.x = i * R.dimen.BLOCK;
+				b.y = j * R.dimen.BLOCK;
+				grid.addChild(b);
+			}
+		}
+		this.stage.addChild(grid);
+	}
+
 	var Tetris = function () {
 		function Tetris(canvas) {
 			var _this = this;
 
 			_classCallCheck(this, Tetris);
 
+			canvas.width += R.dimen.STROKE * 0.5;
+			canvas.height += R.dimen.STROKE;
+
 			this.stage = new createjs.Stage(canvas);
 			this.stage.snapToPixelEnabled = true;
 
-			this.figures = [];
+			this.field = new createjs.Container();
 
 			this.setupGUI();
+
+			this.figures = [];
+
 			this.bindEvents();
 
 			this.next = _figure2.default.getInstance().produce();
@@ -400,8 +430,16 @@ var Tetris = function () {
 			value: function setupGUI() {
 				//todo: add text labels, buttons, etc
 
+				if (DEBUG) {
+					drawDebugGrid.call(this);
+				}
+
+				this.field.x = -1;
+				this.field.y = -1;
+				this.stage.addChild(this.field);
+
 				var rect = new createjs.Shape();
-				rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth, 0, this.sidebarWidth, this.height);
+				rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth + R.dimen.STROKE, 0, this.sidebarWidth, this.height);
 				this.stage.addChild(rect);
 
 				//this.stage.cache(this.fieldWidth, 0, this.width - this.fieldWidth, this.height);
@@ -423,8 +461,10 @@ var Tetris = function () {
 				switch (event.keyCode) {
 					case R.keys.UP:
 						this.current.rotate();
-						if (this.current.x >= this.fieldWidth - this.current.width) {
-							this.current.x = this.fieldWidth - this.current.width + 2 * R.dimen.STROKE * 0.75;
+
+						var threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
+						if (this.current.x >= threshold) {
+							this.current.x = threshold;
 						}
 						break;
 
@@ -439,6 +479,10 @@ var Tetris = function () {
 					case R.keys.DOWN:
 						this.moveDown();
 						break;
+
+					case R.keys.SPACE:
+						this.moveDown(true);
+						break;
 				}
 
 				this.stage.update();
@@ -447,18 +491,21 @@ var Tetris = function () {
 			key: 'tick',
 			value: function tick(event) {
 				this.moveDown();
+				// todo: this.removeLines();
 
 				this.stage.update(event);
 			}
 		}, {
 			key: 'moveDown',
 			value: function moveDown() {
+				var fall = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
+				var threshold = this.height - this.current.height + R.dimen.STROKE;
+
 				this.current.y += R.dimen.BLOCK;
 
-				var d = this.current.height;
-
-				if (this.current.y >= this.height - d + R.dimen.STROKE * 0.5) {
-					this.current.y = this.height - d + R.dimen.STROKE * 0.5;
+				if (this.current.y >= threshold || fall) {
+					this.current.y = threshold; // stick to bottom
 					this.current = this.next;
 					this.next = _figure2.default.getInstance().produce();
 				}
@@ -500,11 +547,11 @@ var Tetris = function () {
 		}, {
 			key: 'current',
 			set: function set(figure) {
-				figure.x = this.fieldWidth / 2 - 1;
+				figure.x = this.fieldWidth / 2;
 				figure.y = 0;
 
 				this.figures.push(figure);
-				this.stage.addChild(figure);
+				this.field.addChild(figure);
 
 				_current = figure;
 			},
@@ -516,7 +563,8 @@ var Tetris = function () {
 			set: function set(figure) {
 				figure.x = this.fieldWidth + this.sidebarWidth / 2 - figure.width / 2;
 				figure.y = 50;
-				this.stage.addChild(figure);
+
+				this.field.addChild(figure);
 
 				_next = figure;
 			},
