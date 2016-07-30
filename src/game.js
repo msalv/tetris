@@ -43,6 +43,31 @@ const Tetris = (() => {
 			this.field = new createjs.Container();
 			this.placeholder = new createjs.Container();
 
+			this.restart();
+		}
+
+		static start(canvas) {
+			if (instance === null) {
+				instance = new Tetris(canvas);
+			}
+			return instance;
+		}
+
+		pause() {
+			createjs.Ticker.removeAllEventListeners("tick");
+			this.paused = true;
+		}
+
+		unpause() {
+			createjs.Ticker.on("tick", (event) => this.tick(event));
+			this.paused = false;
+		}
+
+		restart() {
+			this.stage.removeAllChildren();
+			this.field.removeAllChildren();
+			this.placeholder.removeAllChildren();
+
 			this.setupGUI();
 			this.bindEvents();
 			
@@ -52,14 +77,7 @@ const Tetris = (() => {
 			this.stage.update();
 
 			createjs.Ticker.setInterval(1000);
-			createjs.Ticker.on("tick", (event) => this.tick(event));
-		}
-
-		static start(canvas) {
-			if (instance === null) {
-				instance = new Tetris(canvas);
-			}
-			return instance;
+			this.unpause();
 		}
 
 		get height() {
@@ -131,6 +149,13 @@ const Tetris = (() => {
 		handleKeyDown(event) {
 			event = event || window.event;
 
+			if ( this.paused ) {
+				if ( event.keyCode == R.keys.ESC ) {
+					this.unpause();
+				}
+				return;
+			}
+
 			switch (event.keyCode) {
 				case R.keys.UP:
 					this.current.rotate();
@@ -160,6 +185,10 @@ const Tetris = (() => {
 
 				case R.keys.SPACE:
 					this.fallDown();
+					break;
+
+				case R.keys.ESC:
+					this.pause();
 					break;
 			}
 
