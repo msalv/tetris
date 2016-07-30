@@ -19,6 +19,11 @@ const Block = (() => {
 
 			this.setBounds(R.dimen.STROKE, R.dimen.STROKE, R.dimen.BLOCK, R.dimen.BLOCK);
 		}
+
+		get center() {
+			var b = this.getBounds();
+			return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+		}
 	}
 	 
 	return createjs.promote(Block, "Shape");
