@@ -194,13 +194,15 @@ const FiguresFactory = (() => {
 		produce() {
 			var F = classes[ Util.random(0, classes.length) ];
 			var color = colors[ Util.random(0, colors.length) ];
-			var rotation = degrees[ Util.random(0, degrees.length) ];
+			var rotation = Util.random(0, degrees.length);
 			var doFlip = !!Util.random(0, 2);
 			
 			var f = new F(color);
 
 			doFlip && f.flip();
-			f.rotate(rotation);
+			for (var i = 0; i < rotation; ++i) {
+				f.rotate();
+			}
 
 			return f;
 		}
