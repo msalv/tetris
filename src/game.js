@@ -7,6 +7,30 @@ const Tetris = (() => {
 	
 	let _current = null;
 	let _next = null;
+
+	const DEBUG = false;
+
+	function drawDebugGrid() {
+		var grid = new createjs.Container();
+		grid.x = -1;
+		grid.y = -1;
+
+		var block = FiguresFactory.getInstance().produce().getChildAt(0);
+
+		block.color = "#FFFFFF";
+		block.alpha = 0.3;
+		block.setup();
+
+		for (let i=0; i < this.width / R.dimen.BLOCK; ++i) {
+			for (let j=0; j < this.height / R.dimen.BLOCK; ++j) {
+				let b = block.clone();
+				b.x = i * R.dimen.BLOCK;
+				b.y = j * R.dimen.BLOCK;
+				grid.addChild(b);
+			}
+		}
+		this.stage.addChild(grid);
+	}
 	
 	class Tetris {
 		constructor(canvas) {
@@ -78,6 +102,10 @@ const Tetris = (() => {
 
 		setupGUI() {
 			//todo: add text labels, buttons, etc
+
+			if (DEBUG) {
+				drawDebugGrid.call(this);
+			}
 			
 			var rect = new createjs.Shape();
 			rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth, 0, this.sidebarWidth, this.height);
