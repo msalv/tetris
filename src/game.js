@@ -34,8 +34,8 @@ const Tetris = (() => {
 	
 	class Tetris {
 		constructor(canvas) {
-			canvas.width += R.dimen.STROKE*0.5;
-			canvas.height += R.dimen.STROKE;
+			canvas.width = (R.dimen.FIELD_W + R.dimen.SIDEBAR_W) * R.dimen.BLOCK + R.dimen.STROKE*0.5;
+			canvas.height = R.dimen.FIELD_H * R.dimen.BLOCK + R.dimen.STROKE;
 
 			this.stage = new createjs.Stage(canvas);
 			this.stage.snapToPixelEnabled = true;

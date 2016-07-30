@@ -12,10 +12,11 @@ export const colors = {
 };
 
 export const dimen = {
-	BLOCK:   16,
-	STROKE:   2,
-	FIELD_W: 10,
-	FIELD_H: 20,
+	BLOCK:   32,
+	STROKE:   4,
+	FIELD_W: 10, // blocks
+	FIELD_H: 20, // blocks
+	SIDEBAR_W: 5, // blocks
 	TEXT_BIG: "20px Roboto Mono",
 	TEXT_SMALL: "16px Roboto Mono"
 };
