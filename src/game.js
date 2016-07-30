@@ -171,7 +171,7 @@ const Tetris = (() => {
 			this.overlay.addChild(shape);
 
 			var text = new createjs.Text(R.strings.PAUSED, R.dimen.TEXT_LARGE, R.colors.BLACK);
-			var b = text.getBounds()
+			var b = text.getBounds();
 			text.set({
 				x: this.fieldWidth / 2 - b.width / 2,
 				y: this.height / 2 - b.height / 2
