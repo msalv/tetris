@@ -17,7 +17,7 @@ const Tetris = (() => {
 
 		var block = FiguresFactory.getInstance().produce().getChildAt(0);
 
-		block.color = "#FFFFFF";
+		block.color = R.colors.WHITE;
 		block.alpha = 0.3;
 		block.setup();
 
@@ -42,6 +42,9 @@ const Tetris = (() => {
 
 			this.field = new createjs.Container();
 			this.placeholder = new createjs.Container();
+
+			this.score = null;
+			this.hiscore = null;
 
 			this.bindEvents();
 			this.restart();
@@ -142,11 +145,42 @@ const Tetris = (() => {
 			rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth + R.dimen.STROKE, 0, this.sidebarWidth, this.height);
 			this.stage.addChild(rect);
 
+			this.setText();
+
 			//this.stage.cache(this.fieldWidth, 0, this.width - this.fieldWidth, this.height);
 		}
 
 		bindEvents() {
 			document.onkeydown = (e) => this.handleKeyDown(e);
+		}
+
+		setText() {
+			const third = this.height / 3;
+
+			var strings = [
+				{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: 20 },
+				{ text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: third + 20 },
+				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: third + 40, label: "score" },
+				{ text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: this.height - third },
+				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + 25, label: "hiscore" }
+			];
+
+			const x = this.fieldWidth + this.sidebarWidth / 2;
+
+			strings.forEach((s, i) => {
+				let t = new createjs.Text(s.text, s.size, R.colors.WHITE);
+				let b = t.getBounds();
+				t.set({
+					x: x - b.width / 2,
+					y: i*b.height + s.y
+				});
+
+				this.stage.addChild(t);
+
+				if ( s.label ) {
+					this[ s.label ] = t;
+				}
+			});
 		}
 
 		handleKeyDown(event) {
