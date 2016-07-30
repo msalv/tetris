@@ -41,11 +41,9 @@ const Tetris = (() => {
 			this.stage.snapToPixelEnabled = true;
 
 			this.field = new createjs.Container();
+			this.placeholder = new createjs.Container();
 
 			this.setupGUI();
-
-			this.figures = [];
-
 			this.bindEvents();
 			
 			this.next = FiguresFactory.getInstance().produce();
@@ -84,8 +82,7 @@ const Tetris = (() => {
 			figure.x = this.fieldWidth / 2;
 			figure.y = 0;
 			
-			this.figures.push(figure);
-			this.field.addChild(figure);
+			this.placeholder.addChild(figure);
 
 			_current = figure;
 		}
@@ -114,9 +111,11 @@ const Tetris = (() => {
 				drawDebugGrid.call(this);
 			}
 
-			this.field.x = -1;
-			this.field.y = -1;
+			this.field.set({x: -1, y: -1});
 			this.stage.addChild(this.field);
+
+			this.placeholder.set({x: -1, y: -1});
+			this.stage.addChild(this.placeholder);
 			
 			var rect = new createjs.Shape();
 			rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth + R.dimen.STROKE, 0, this.sidebarWidth, this.height);
