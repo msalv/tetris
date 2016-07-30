@@ -98,7 +98,7 @@ const Tetris = (() => {
 			figure.x = this.fieldWidth + this.sidebarWidth / 2 - figure.width / 2;
 			figure.y = 50;
 
-			this.field.addChild(figure);
+			this.stage.addChild(figure);
 
 			_next = figure;
 		}
@@ -135,7 +135,7 @@ const Tetris = (() => {
 			switch (event.keyCode) {
 				case R.keys.UP:
 					this.current.rotate();
-					
+
 					var threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
 					if ( this.current.x >= threshold ) {
 						this.current.x = threshold;
