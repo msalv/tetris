@@ -64,9 +64,9 @@ const Tetris = (() => {
 		}
 
 		restart() {
-			this.stage.removeAllChildren();
 			this.field.removeAllChildren();
 			this.placeholder.removeAllChildren();
+			this.stage.removeAllChildren();
 
 			this.setupGUI();
 			this.bindEvents();
@@ -223,6 +223,11 @@ const Tetris = (() => {
 
 			this.current = this.next;
 			this.next = FiguresFactory.getInstance().produce();
+
+			if ( this.hitTest() ) {
+				// todo: update high score
+				this.restart();
+			}
 		}
 
 		moveDown() {
