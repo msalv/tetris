@@ -347,6 +347,10 @@ var _res = require('./res');
 
 var R = _interopRequireWildcard(_res);
 
+var _util = require('./util');
+
+var _util2 = _interopRequireDefault(_util);
+
 var _figure = require('./figure');
 
 var _figure2 = _interopRequireDefault(_figure);
@@ -553,6 +557,13 @@ var Tetris = function () {
 						_this3[s.label] = t;
 					}
 				});
+
+				if (_util2.default.storageAvailable('localStorage')) {
+					var hiscore = window.localStorage.getItem('hiscore');
+					if (hiscore) {
+						this.hiscore.text = _util2.default.str_pad(hiscore, '0', R.strings.ZEROS.length);
+					}
+				}
 			}
 		}, {
 			key: 'handleKeyDown',
@@ -625,7 +636,6 @@ var Tetris = function () {
 			key: 'tick',
 			value: function tick(event) {
 				this.moveDown();
-				// todo: this.removeLines();
 
 				this.stage.update(event);
 			}
@@ -634,6 +644,8 @@ var Tetris = function () {
 			value: function swap() {
 				this.placeholder.removeChildAt(0);
 				this.field.addChild(this.current);
+
+				this.removeLines();
 
 				this.current = this.next;
 				this.next = _figure2.default.getInstance().produce();
@@ -702,6 +714,68 @@ var Tetris = function () {
 				}
 			}
 		}, {
+			key: 'removeLines',
+			value: function removeLines() {
+				var num = this.current.numChildren;
+				var lines = [];
+				var ys = [];
+
+				for (var i = 0; i < num; ++i) {
+					var block = this.current.getChildAt(i);
+					var line = [];
+
+					var pt = block.localToLocal(block.center.x, block.center.y, this.field);
+
+					if (ys.indexOf(pt.y) !== -1) {
+						continue;
+					}
+
+					ys.push(pt.y);
+
+					for (var j = 0; j < R.dimen.FIELD_W; ++j) {
+						var b = this.field.getObjectUnderPoint(R.dimen.BLOCK / 2 + R.dimen.BLOCK * j, pt.y);
+						b && line.push(b);
+					}
+
+					if (line.length == R.dimen.FIELD_W) {
+						lines.push(line);
+					}
+				}
+
+				var points = 0;
+
+				lines.forEach(function (line) {
+					line.forEach(function (block) {
+						var f = block.parent;
+						f.removeChild(block);
+						f.updateCache();
+					});
+					points = points * 2 + 100;
+				});
+
+				this.updateScore(points);
+
+				this.stage.update();
+
+				// todo: add points
+			}
+		}, {
+			key: 'updateScore',
+			value: function updateScore(points) {
+				points = points + parseInt(this.score.text);
+				var text = _util2.default.str_pad(points, '0', R.strings.ZEROS.length);
+
+				this.score.text = text;
+
+				if (points > parseInt(this.hiscore.text)) {
+					this.hiscore.text = text;
+
+					if (_util2.default.storageAvailable('localStorage')) {
+						window.localStorage.setItem('hiscore', points);
+					}
+				}
+			}
+		}, {
 			key: 'height',
 			get: function get() {
 				return this.stage.canvas.height;
@@ -766,7 +840,7 @@ var Tetris = function () {
 global.Tetris = Tetris;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./figure":1,"./res":3}],3:[function(require,module,exports){
+},{"./figure":1,"./res":3,"./util":4}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -815,7 +889,7 @@ var strings = exports.strings = {
 };
 
 },{}],4:[function(require,module,exports){
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
@@ -843,9 +917,29 @@ var Util = function () {
 	}
 
 	_createClass(Util, null, [{
-		key: "random",
+		key: 'random',
 		value: function random(min, max) {
 			return Math.floor(Math.random() * (max - min)) + min;
+		}
+	}, {
+		key: 'str_pad',
+		value: function str_pad(str, pad, num) {
+			str = '' + str;
+			var s = Array(num + 1).join(pad);
+			return s.substring(0, s.length - str.length) + str;
+		}
+	}, {
+		key: 'storageAvailable',
+		value: function storageAvailable(type) {
+			try {
+				var storage = window[type],
+				    x = '__storage_test__';
+				storage.setItem(x, x);
+				storage.removeItem(x);
+				return true;
+			} catch (e) {
+				return false;
+			}
 		}
 	}]);
 
