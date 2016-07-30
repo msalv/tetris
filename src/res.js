@@ -7,6 +7,7 @@ export const colors = {
 	LIME:   "#CDDC39",
 	INDIGO: "#3F51B5",
 	BLACK:  "#000000",
+	WHITE:  "#FFFFFF",
 	GRAY:   "#212121"
 };
 
@@ -14,7 +15,9 @@ export const dimen = {
 	BLOCK:   16,
 	STROKE:   2,
 	FIELD_W: 10,
-	FIELD_H: 20
+	FIELD_H: 20,
+	TEXT_BIG: "20px Roboto Mono",
+	TEXT_SMALL: "16px Roboto Mono"
 };
 
 export const keys = {
@@ -25,4 +28,12 @@ export const keys = {
 	LEFT:  37,
 	RIGHT: 39,
 	DOWN:  40
+}
+
+export const strings = {
+	NEXT: "next",
+	SCORE: "score",
+	HISCORE: "hi-score",
+	ZEROS: "0000000",
+	PAUSED: "paused"
 }
