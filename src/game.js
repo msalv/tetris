@@ -1,4 +1,5 @@
 import * as R from './res'
+import Util from './util'
 import FiguresFactory from './figure'
 
 const Tetris = (() => {
@@ -217,6 +218,13 @@ const Tetris = (() => {
 					this[ s.label ] = t;
 				}
 			});
+
+			if ( Util.storageAvailable('localStorage') ) {
+				var hiscore = window.localStorage.getItem('hiscore');
+				if ( hiscore ) {
+					this.hiscore.text = Util.str_pad(hiscore, '0', R.strings.ZEROS.length);
+				}
+			}
 		}
 
 		handleKeyDown(event) {
@@ -286,7 +294,6 @@ const Tetris = (() => {
 
 		tick(event) {
 			this.moveDown();
-			// todo: this.removeLines();
 
 			this.stage.update(event);
 		}
@@ -294,6 +301,8 @@ const Tetris = (() => {
 		swap() {
 			this.placeholder.removeChildAt(0);
 			this.field.addChild(this.current);
+
+			this.removeLines();
 
 			this.current = this.next;
 			this.next = FiguresFactory.getInstance().produce();
@@ -357,6 +366,66 @@ const Tetris = (() => {
 					this.current.x = x;
 				}
 			}
+		}
+
+		removeLines() {
+			const num = this.current.numChildren;
+			var lines = [];
+			var ys = [];
+
+			for ( let i = 0; i < num; ++i ) {
+				let block = this.current.getChildAt(i);
+				let line = [];
+
+				let pt = block.localToLocal(block.center.x, block.center.y, this.field);
+
+				if ( ys.indexOf(pt.y) !== -1 ) {
+					continue;
+				}
+
+				ys.push(pt.y);
+
+				for (let j = 0; j < R.dimen.FIELD_W; ++j) {
+			  		let b = this.field.getObjectUnderPoint(R.dimen.BLOCK / 2 + R.dimen.BLOCK*j, pt.y);
+			  		b && line.push(b);
+				}
+
+				if (line.length == R.dimen.FIELD_W) {
+					lines.push(line);
+				}
+			}
+
+			var points = 0;
+
+			lines.forEach( line => {
+				line.forEach( block => {
+					let f = block.parent;
+					f.removeChild(block);
+					f.updateCache();
+				});
+				points = points * 2 + 100;
+			});
+
+			this.updateScore(points);
+
+			this.stage.update();
+		}
+
+		updateScore(points) {
+			points = points + parseInt(this.score.text);
+			var text = Util.str_pad(points, '0', R.strings.ZEROS.length);
+			
+			this.score.text = text;
+
+			if ( points > parseInt( this.hiscore.text ) ) {
+				this.hiscore.text = text;
+
+				if ( Util.storageAvailable('localStorage') ) {
+					window.localStorage.setItem('hiscore', points);
+				}
+			}
+
+			// todo: if ( points / speed > 10 ) increase speed
 		}
 	}
 
