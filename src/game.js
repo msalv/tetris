@@ -34,6 +34,9 @@ const Tetris = (() => {
 	
 	class Tetris {
 		constructor(canvas) {
+			canvas.width += R.dimen.STROKE*0.5;
+			canvas.height += R.dimen.STROKE;
+
 			this.stage = new createjs.Stage(canvas);
 			this.stage.snapToPixelEnabled = true;
 
@@ -78,7 +81,7 @@ const Tetris = (() => {
 		}
 
 		set current(figure) {
-			figure.x = this.fieldWidth / 2 - 1;
+			figure.x = this.fieldWidth / 2;
 			figure.y = 0;
 			
 			this.figures.push(figure);
@@ -116,7 +119,7 @@ const Tetris = (() => {
 			this.stage.addChild(this.field);
 			
 			var rect = new createjs.Shape();
-			rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth, 0, this.sidebarWidth, this.height);
+			rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth + R.dimen.STROKE, 0, this.sidebarWidth, this.height);
 			this.stage.addChild(rect);
 
 			//this.stage.cache(this.fieldWidth, 0, this.width - this.fieldWidth, this.height);
@@ -132,8 +135,10 @@ const Tetris = (() => {
 			switch (event.keyCode) {
 				case R.keys.UP:
 					this.current.rotate();
-					if ( this.current.x >= this.fieldWidth - this.current.width ) {
-						this.current.x = this.fieldWidth - this.current.width + 2*R.dimen.STROKE*0.75;
+					
+					var threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
+					if ( this.current.x >= threshold ) {
+						this.current.x = threshold;
 					}
 					break;
 
@@ -165,7 +170,7 @@ const Tetris = (() => {
 		}
 
 		moveDown(fall = false) {
-			var threshold = this.height - this.current.height + R.dimen.STROKE*0.5;
+			var threshold = this.height - this.current.height + R.dimen.STROKE;
 
 			this.current.y += R.dimen.BLOCK;
 
