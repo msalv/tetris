@@ -80,9 +80,11 @@ const Figure = (() => {
 			this.updateCache();
 		}
 
-		rotate() {
-			var rotation = this.rotation + 90;
-			this.rotation = (rotation >= 360) ? 0 : rotation;
+		rotate(clockwise = true) {
+			const degree = clockwise ? 90 : -90; 
+			var rotation = this.rotation + degree;
+
+			this.rotation = (rotation >= 360) ? 0 : (rotation < 0 ? 270 : rotation);
 
 			this.updateReg();
 			this.updateCache();
