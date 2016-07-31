@@ -52,6 +52,14 @@ const Figure = (() => {
 
 			this.snapToPixel = true;
 			
+			this.updateBounds();
+		}
+
+		updateBounds() {
+			if ( this.cacheID ) {
+				this.uncache();
+			}
+
 			const {x, y, width, height} = this.getBounds().pad(R.dimen.STROKE, R.dimen.STROKE, R.dimen.STROKE, R.dimen.STROKE);
 
 		 	this.regXY = [
