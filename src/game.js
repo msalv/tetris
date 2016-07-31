@@ -186,6 +186,7 @@ const Tetris = (() => {
 			this.overlay.addChild(text);
 
 			this.stage.addChild(this.overlay);
+			this.overlay.cache(0, 0, this.width, this.height);
 		}
 
 		hidePauseOverlay() {
