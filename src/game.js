@@ -105,7 +105,7 @@ const Tetris = (() => {
 			this.hiscore = null;
 			this.overlay = null;
 
-			this.map = new BlocksMap(this.field);
+			this.map = new BlocksMap();
 
 			this.bindEvents();
 			this.restart();
@@ -144,6 +144,7 @@ const Tetris = (() => {
 			this.next = FiguresFactory.getInstance().produce();
 			this.current = FiguresFactory.getInstance().produce();
 
+			this.field.updateCache();
 			this.sidebar.updateCache();
 			this.stage.update();
 
@@ -206,6 +207,9 @@ const Tetris = (() => {
 
 			this.field.set({x: -1, y: -1});
 			this.stage.addChild(this.field);
+
+			//cache field
+			this.field.cache(1, 1, this.fieldWidth + R.dimen.STROKE, this.height);
 
 			this.placeholder.set({x: -1, y: -1});
 			this.stage.addChild(this.placeholder);
@@ -374,6 +378,9 @@ const Tetris = (() => {
 			this.map.add(this.current.children);
 
 			this.removeLines();
+			
+			this.field.updateCache();
+			this.stage.update();
 
 			this.current = this.next;
 			this.next = FiguresFactory.getInstance().produce();
@@ -483,8 +490,6 @@ const Tetris = (() => {
 			if (points > 0) {
 				this.updateScore(points);
 			}
-
-			this.stage.update();
 		}
 
 		updateScore(points) {
