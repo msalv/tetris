@@ -9,6 +9,10 @@ const Tetris = (() => {
 	let _current = null;
 	let _next = null;
 
+	const INTERVAL    = 1000;
+	const SPEED_K     =  0.8;
+	const LEVELUP_PTS = 7000;
+
 	const DEBUG = false;
 
 	function drawDebugGrid() {
@@ -96,6 +100,7 @@ const Tetris = (() => {
 			this.placeholder = new createjs.Container();
 			this.sidebar = new createjs.Container();
 
+			this.level = 1;
 			this.score = null;
 			this.hiscore = null;
 			this.overlay = null;
@@ -142,9 +147,14 @@ const Tetris = (() => {
 			this.sidebar.updateCache();
 			this.stage.update();
 
-			createjs.Ticker.setInterval(1000);
+			this.level = 1;
+			this.updateTicker();
 
 			this.unpause();
+		}
+
+		updateTicker() {
+			createjs.Ticker.setInterval( Math.ceil( INTERVAL * Math.pow(SPEED_K, this.level) ) );
 		}
 
 		get height() {
@@ -493,7 +503,10 @@ const Tetris = (() => {
 
 			this.sidebar.updateCache();
 
-			// todo: if ( points / speed > 10 ) increase speed
+			if ( points / LEVELUP_PTS >= this.level ) {
+				++this.level;
+				this.updateTicker();
+			}
 		}
 	}
 
