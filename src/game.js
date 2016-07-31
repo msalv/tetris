@@ -133,8 +133,6 @@ const Tetris = (() => {
 		}
 
 		setupGUI() {
-			//todo: add text labels, buttons, etc
-
 			if (DEBUG) {
 				drawDebugGrid.call(this);
 			}
@@ -432,4 +430,4 @@ const Tetris = (() => {
 	return Tetris;
 })();
 
-global.Tetris = Tetris;
+window.Tetris = Tetris;
