@@ -123,10 +123,10 @@ const Tetris = (() => {
 		}
 
 		set next(figure) {
-			figure.x = this.sidebarWidth / 2 - figure.width / 2;
+			figure.x = this.fieldWidth + this.sidebarWidth / 2 - figure.width / 2;
 			figure.y = 50;
 
-			this.sidebar.addChild(figure);
+			this.stage.addChild(figure);
 
 			_next = figure;
 		}
@@ -314,7 +314,6 @@ const Tetris = (() => {
 			this.next = FiguresFactory.getInstance().produce();
 
 			if ( this.hitTest() ) {
-				// todo: update high score
 				this.restart();
 			}
 		}
