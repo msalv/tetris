@@ -8,8 +8,7 @@
     "url": "https://github.com/msalv/tetris.git"
   },
   "scripts": {
-    "prebuild": "babel src -d build",
-    "build": "browserify build/game.js -o dist/bundle.js -t [ babelify ]",
+    "build": "browserify src/game.js -o dist/bundle.js -t [ babelify ]",
     "publish": "npm run build",
     "postpublish": "uglifyjs dist/bundle.js -m -c -o dist/bundle.min.js"
   },
