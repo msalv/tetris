@@ -11,7 +11,7 @@ const Tetris = (() => {
 
 	const INTERVAL    = 1000;
 	const SPEED_K     =  0.8;
-	const LEVELUP_PTS = 7000;
+	const LEVELUP_PTS = 2000;
 
 	const DEBUG = false;
 
