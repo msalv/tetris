@@ -6,12 +6,11 @@
 body {
 	padding-top: 15px;
 	background-color: #e4e4e4;
+	font-family: Roboto Mono, monospace;
 }
 
 canvas {
 	display: block;
-	width: 640px;
-	height: 480px;
 	margin: 0 auto;
 	background-color: #ffffff;
 }

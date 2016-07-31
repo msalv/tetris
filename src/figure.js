@@ -15,9 +15,14 @@ const Block = (() => {
 				.setStrokeStyle(R.dimen.STROKE)
 				.beginStroke(R.colors.BLACK)
 				.beginFill(this.color)
-				.drawRect(0, 0, R.dimen.BLOCK, R.dimen.BLOCK);
+				.drawRect(R.dimen.STROKE, R.dimen.STROKE, R.dimen.BLOCK, R.dimen.BLOCK);
 
-			this.setBounds(0, 0, R.dimen.BLOCK, R.dimen.BLOCK);
+			this.setBounds(R.dimen.STROKE, R.dimen.STROKE, R.dimen.BLOCK, R.dimen.BLOCK);
+		}
+
+		get center() {
+			var b = this.getBounds();
+			return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
 		}
 	}
 	 
@@ -30,8 +35,8 @@ const Figure = (() => {
 		constructor(color) {
 			super();
 			this.color = color;
-			this.velocity = 0;
 			this.coords = [];
+			this.regXY = [];
 		}
 
 		tick(event) {
@@ -44,19 +49,62 @@ const Figure = (() => {
 
 				this.addChild(block);
 			}
-			const {x, y, width, height} = this.getBounds();
-			this.cache(x, y, width, height);
+
+			this.snapToPixel = true;
+			
+			this.updateBounds();
+		}
+
+		updateBounds() {
+			if ( this.cacheID ) {
+				this.uncache();
+			}
+
+			const {x, y, width, height} = this.getBounds().pad(R.dimen.STROKE, R.dimen.STROKE, R.dimen.STROKE, R.dimen.STROKE);
+
+		 	this.regXY = [
+			    { regX: 0, regY: 0 }, 
+			    { regX: 0, regY: height }, 
+			    { regX: width, regY: height }, 
+			    { regX: width, regY: 0 }
+			];
+
+			this.cache(x, y, width, height); // overrides bounds as well
+		}
+
+		updateReg() {
+			var i = this.rotation / 90;
+			if (this.scaleX < 0) {
+				i = (this.regXY.length - 1) - i;
+			}
+			this.set(this.regXY[i]);
 		}
 
 		flip() {
-			this.regX = this.getBounds().width / 2;
-			this.scaleX = -1;
+			this.scaleX = -this.scaleX;
+			
+			this.updateReg();
 			this.updateCache();
 		}
 
-		rotate(degree) {
-			this.rotation = degree;
+		rotate(clockwise = true) {
+			const degree = clockwise ? 90 : -90; 
+			var rotation = this.rotation + degree;
+
+			this.rotation = (rotation >= 360) ? 0 : (rotation < 0 ? 270 : rotation);
+
+			this.updateReg();
 			this.updateCache();
+		}
+
+		get width() {
+			var bounds = this.getBounds();
+			return (this.rotation / 90) % 2 == 0 ? bounds.width : bounds.height;
+		}
+
+		get height() {
+			var bounds = this.getBounds();
+			return (this.rotation / 90) % 2 == 0 ? bounds.height : bounds.width;
 		}
 	}
 	 
@@ -138,7 +186,7 @@ const FiguresFactory = (() => {
 	];
 
 	const colors = [
-		R.colors.RED, R.colors.GREEN, R.colors.BLUE, R.colors.YELLOW, R.colors.PURPLE
+		R.colors.INDIGO, R.colors.RED, R.colors.LIME, R.colors.GREEN, R.colors.BLUE, R.colors.YELLOW, R.colors.PURPLE
 	];
 
 	const degrees = [0, 90, 180, 270];
@@ -153,13 +201,15 @@ const FiguresFactory = (() => {
 		produce() {
 			var F = classes[ Util.random(0, classes.length) ];
 			var color = colors[ Util.random(0, colors.length) ];
-			var rotation = degrees[ Util.random(0, degrees.length) ];
+			var rotation = Util.random(0, degrees.length);
 			var doFlip = !!Util.random(0, 2);
 			
 			var f = new F(color);
 
 			doFlip && f.flip();
-			f.rotate(rotation);
+			for (var i = 0; i < rotation; ++i) {
+				f.rotate();
+			}
 
 			return f;
 		}
