@@ -43,6 +43,7 @@ const Tetris = (() => {
 
 			this.field = new createjs.Container();
 			this.placeholder = new createjs.Container();
+			this.sidebar = new createjs.Container();
 
 			this.score = null;
 			this.hiscore = null;
@@ -76,6 +77,7 @@ const Tetris = (() => {
 
 			this.field.removeAllChildren();
 			this.placeholder.removeAllChildren();
+			this.sidebar.removeAllChildren();
 			this.stage.removeAllChildren();
 
 			this.setupGUI();
@@ -83,6 +85,7 @@ const Tetris = (() => {
 			this.next = FiguresFactory.getInstance().produce();
 			this.current = FiguresFactory.getInstance().produce();
 
+			this.sidebar.updateCache();
 			this.stage.update();
 
 			createjs.Ticker.setInterval(1000);
@@ -120,10 +123,10 @@ const Tetris = (() => {
 		}
 
 		set next(figure) {
-			figure.x = this.fieldWidth + this.sidebarWidth / 2 - figure.width / 2;
+			figure.x = this.sidebarWidth / 2 - figure.width / 2;
 			figure.y = 50;
 
-			this.stage.addChild(figure);
+			this.sidebar.addChild(figure);
 
 			_next = figure;
 		}
@@ -142,14 +145,18 @@ const Tetris = (() => {
 
 			this.placeholder.set({x: -1, y: -1});
 			this.stage.addChild(this.placeholder);
+
+			this.sidebar.set({x: this.fieldWidth + R.dimen.STROKE, y: 0});
+			this.stage.addChild(this.sidebar);
 			
 			var rect = new createjs.Shape();
-			rect.graphics.beginFill(R.colors.GRAY).drawRect(this.fieldWidth + R.dimen.STROKE, 0, this.sidebarWidth, this.height);
-			this.stage.addChild(rect);
+			rect.graphics.beginFill(R.colors.GRAY).drawRect(0, 0, this.sidebarWidth, this.height);
+			this.sidebar.addChild(rect);
 
 			this.setText();
 
-			//this.stage.cache(this.fieldWidth, 0, this.width - this.fieldWidth, this.height);
+			// cache sidebar
+			this.sidebar.cache(0, 0, this.sidebarWidth, this.height);
 		}
 
 		showPauseOverlay() {
@@ -200,7 +207,7 @@ const Tetris = (() => {
 				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + 25, label: "hiscore" }
 			];
 
-			const x = this.fieldWidth + this.sidebarWidth / 2;
+			const x = this.sidebarWidth / 2;
 
 			strings.forEach((s, i) => {
 				let t = new createjs.Text(s.text, s.size, R.colors.WHITE);
@@ -210,7 +217,7 @@ const Tetris = (() => {
 					y: i*b.height + s.y
 				});
 
-				this.stage.addChild(t);
+				this.sidebar.addChild(t);
 
 				if ( s.label ) {
 					this[ s.label ] = t;
@@ -404,7 +411,9 @@ const Tetris = (() => {
 				points = points * 2 + 100;
 			});
 
-			this.updateScore(points);
+			if (points > 0) {
+				this.updateScore(points);
+			}
 
 			this.stage.update();
 		}
@@ -422,6 +431,8 @@ const Tetris = (() => {
 					window.localStorage.setItem('hiscore', points);
 				}
 			}
+
+			this.sidebar.updateCache();
 
 			// todo: if ( points / speed > 10 ) increase speed
 		}
