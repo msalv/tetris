@@ -100,7 +100,7 @@ const Tetris = (() => {
 			this.placeholder = new createjs.Container();
 			this.sidebar = new createjs.Container();
 
-			this.level = 1;
+			this.level = 0;
 			this.score = null;
 			this.hiscore = null;
 			this.overlay = null;
@@ -148,14 +148,14 @@ const Tetris = (() => {
 			this.sidebar.updateCache();
 			this.stage.update();
 
-			this.level = 1;
+			this.level = 0;
 			this.updateTicker();
 
 			this.unpause();
 		}
 
 		updateTicker() {
-			createjs.Ticker.setInterval( Math.ceil( INTERVAL * Math.pow(SPEED_K, this.level) ) );
+			createjs.Ticker.interval = Math.ceil( INTERVAL * Math.pow(SPEED_K, this.level) );
 		}
 
 		get height() {
@@ -508,7 +508,7 @@ const Tetris = (() => {
 
 			this.sidebar.updateCache();
 
-			if ( points / LEVELUP_PTS >= this.level ) {
+			if ( points / LEVELUP_PTS >= this.level+1 ) {
 				++this.level;
 				this.updateTicker();
 			}
