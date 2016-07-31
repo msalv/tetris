@@ -32,6 +32,57 @@ const Tetris = (() => {
 		}
 		this.stage.addChild(grid);
 	}
+
+	class BlocksMap {
+		constructor() {
+			this._map = {};
+		}
+
+		add(blocks) {
+			blocks.forEach(block => {
+				let pt = block.localToGlobal(block.center.x, block.center.y);
+				this._map[ pt.y ] = this._map[ pt.y ] || [];
+				this._map[ pt.y ].push( block );
+			});
+		}
+
+		getLine(y) {
+			return this._map[y] || [];
+		}
+
+		remove(y) {
+			this._map[ y ] = null;
+			this.shift(y);
+		}
+
+		clear() {
+			this._map = {};
+		}
+
+		shift(y) {
+			let map = {};
+			const keys = Object.keys(this._map);
+
+			var above = keys.filter(key => ~~key < y);
+
+			above.forEach(a => {
+				map[~~a + R.dimen.BLOCK] = this.getLine(a).map(block => {
+					switch (block.parent.rotation) {
+					    case   0: block.y += R.dimen.BLOCK; break;
+					    case  90: block.x += block.parent.scaleX*R.dimen.BLOCK; break;
+					    case 180: block.y -= R.dimen.BLOCK; break;
+					    case 270: block.x -= block.parent.scaleX*R.dimen.BLOCK; break;
+					}
+					
+					block.parent.updateBounds();
+					return block;
+				});
+				this._map[a] = null;
+			});
+
+			Object.assign(this._map, map);
+		}
+	}
 	
 	class Tetris {
 		constructor(canvas) {
@@ -48,6 +99,8 @@ const Tetris = (() => {
 			this.score = null;
 			this.hiscore = null;
 			this.overlay = null;
+
+			this.map = new BlocksMap(this.field);
 
 			this.bindEvents();
 			this.restart();
@@ -80,6 +133,7 @@ const Tetris = (() => {
 			this.sidebar.removeAllChildren();
 			this.stage.removeAllChildren();
 
+			this.map.clear();
 			this.setupGUI();
 			
 			this.next = FiguresFactory.getInstance().produce();
@@ -253,7 +307,6 @@ const Tetris = (() => {
 						this.current.x = threshold;
 					}
 
-					// todo: come up with something smarter than just reverse rotation
 					if ( this.hitTest() ) {
 						this.current.rotate(false);
 					}
@@ -307,6 +360,8 @@ const Tetris = (() => {
 		swap() {
 			this.placeholder.removeChildAt(0);
 			this.field.addChild(this.current);
+
+			this.map.add(this.current.children);
 
 			this.removeLines();
 
@@ -377,36 +432,40 @@ const Tetris = (() => {
 			const num = this.current.numChildren;
 			var lines = [];
 			var ys = [];
+			var set = [];
 
 			for ( let i = 0; i < num; ++i ) {
 				let block = this.current.getChildAt(i);
-				let line = [];
 
-				let pt = block.localToLocal(block.center.x, block.center.y, this.field);
+				let pt = block.localToGlobal(block.center.x, block.center.y);
 
-				if ( ys.indexOf(pt.y) !== -1 ) {
+				if ( set.indexOf(pt.y) !== -1 ) {
 					continue;
 				}
 
-				ys.push(pt.y);
+				set.push(pt.y);
 
-				for (let j = 0; j < R.dimen.FIELD_W; ++j) {
-			  		let b = this.field.getObjectUnderPoint(R.dimen.BLOCK / 2 + R.dimen.BLOCK*j, pt.y);
-			  		b && line.push(b);
-				}
+				let line = this.map.getLine(pt.y);
 
 				if (line.length == R.dimen.FIELD_W) {
 					lines.push(line);
+					ys.push(pt.y);
 				}
 			}
 
 			var points = 0;
+
+			ys.sort().forEach(y => this.map.remove(y));
 
 			lines.forEach( line => {
 				line.forEach( block => {
 					let f = block.parent;
 					f.removeChild(block);
 					f.updateCache();
+
+					if ( f.numChildren == 0 ) {
+						f.parent.removeChild(f);
+					}
 				});
 				points = points * 2 + 100;
 			});
