@@ -35,7 +35,6 @@ const Figure = (() => {
 		constructor(color) {
 			super();
 			this.color = color;
-			this.velocity = 0;
 			this.coords = [];
 			this.regXY = [];
 		}
