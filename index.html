@@ -3,22 +3,36 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Tetris</title>
-	<link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet" />
 	<link rel="stylesheet" href="res/css/style.css" />
 </head>
 
 <body>
-	<canvas id="stage" width="320" height="400"></canvas>
+	<canvas id="stage" class="loading" width="320" height="400"></canvas>
 
 	<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
 	<script src="res/js/polyfill.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
 	<script src="dist/bundle.js"></script>
 
 	<script>
-	(function(document){
-		var canvas = document.getElementById('stage');
-		var game = Tetris.start(canvas);
-	})(document);
+	(function(document, window){
+
+		window.WebFont.load({
+			google: {
+				families: ['Roboto Mono']
+			},
+			active: startGame,
+			classes: false
+		});
+
+		function startGame() {
+			var canvas = document.getElementById('stage');
+			canvas.className = '';
+
+			Tetris.start(canvas);
+		};
+
+	})(document, window);
 	</script>
 </body>
 
