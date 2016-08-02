@@ -45,7 +45,7 @@ const Tetris = (() => {
 		add(blocks) {
 			blocks.forEach(block => {
 				let pt = block.localToGlobal(block.center.x, block.center.y);
-				pt = { x: Math.floor(pt.x), y: Math.floor(pt.y) };
+				pt = { x: Math.round(pt.x), y: Math.round(pt.y) };
 
 				this._map[ pt.y ] = this._map[ pt.y ] || {};
 				this._map[ pt.y ][ pt.x ] = block;
@@ -53,12 +53,12 @@ const Tetris = (() => {
 		}
 
 		getLine(y) {
-			return this._map[ Math.floor(y) ] || {};
+			return this._map[ Math.round(y) ] || {};
 		}
 
 		remove(y) {
-			y = Math.floor(y);
-			this._map[ y ] = null;
+			y = Math.round(y);
+			this._map[y] = null;
 			this.shift(y);
 		}
 
@@ -377,9 +377,7 @@ const Tetris = (() => {
 				let b = this.current.getChildAt(i);
 				var pt = b.localToGlobal(b.center.x, b.center.y);
 				
-				pt = { x: Math.floor(pt.x), y: Math.floor(pt.y) };
-
-				console.log( this.map.toString(), pt );
+				pt = { x: Math.round(pt.x), y: Math.round(pt.y) };
 
 				if ( this.map._map[ pt.y ] && this.map._map[ pt.y ][ pt.x ] ) {
 					return true;
