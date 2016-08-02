@@ -3,22 +3,45 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Tetris</title>
-	<link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet" />
 	<link rel="stylesheet" href="res/css/style.css" />
+
+	<link rel="apple-touch-icon" sizes="180x180" href="res/img/icons/apple-touch-icon.png" />
+	<link rel="icon" type="image/png" href="res/img/icons/favicon-32x32.png" sizes="32x32" />
+	<link rel="icon" type="image/png" href="res/img/icons/favicon-16x16.png" sizes="16x16" />
+	<link rel="manifest" href="res/img/icons/manifest.json" />
+	<link rel="mask-icon" href="res/img/icons/safari-pinned-tab.svg" color="#5bbad5" />
+	<link rel="shortcut icon" href="res/img/icons/favicon.ico" />
+	<meta name="msapplication-config" content="res/img/icons/browserconfig.xml" />
+	<meta name="theme-color" content="#ffffff" />
 </head>
 
 <body>
-	<canvas id="stage" width="320" height="400"></canvas>
+	<canvas id="stage" class="loading" width="320" height="400"></canvas>
 
 	<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
 	<script src="res/js/polyfill.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
 	<script src="dist/bundle.js"></script>
 
 	<script>
-	(function(document){
-		var canvas = document.getElementById('stage');
-		var game = Tetris.start(canvas);
-	})(document);
+	(function(document, window){
+
+		window.WebFont.load({
+			google: {
+				families: ['Roboto Mono']
+			},
+			active: startGame,
+			classes: false
+		});
+
+		function startGame() {
+			var canvas = document.getElementById('stage');
+			canvas.className = '';
+
+			Tetris.start(canvas);
+		};
+
+	})(document, window);
 	</script>
 </body>
 

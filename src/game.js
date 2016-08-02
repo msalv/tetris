@@ -39,38 +39,46 @@ const Tetris = (() => {
 
 	class BlocksMap {
 		constructor() {
-			this._map = {};
+			this.data = {};
 		}
 
 		add(blocks) {
 			blocks.forEach(block => {
 				let pt = block.localToGlobal(block.center.x, block.center.y);
-				this._map[ pt.y ] = this._map[ pt.y ] || [];
-				this._map[ pt.y ].push( block );
+				pt = { x: Math.round(pt.x), y: Math.round(pt.y) };
+
+				this.data[ pt.y ] = this.data[ pt.y ] || {};
+				this.data[ pt.y ][ pt.x ] = block;
 			});
 		}
 
 		getLine(y) {
-			return this._map[y] || [];
+			return this.data[ Math.round(y) ] || {};
 		}
 
 		remove(y) {
-			this._map[ y ] = null;
+			y = Math.round(y);
+			this.data[y] = null;
 			this.shift(y);
 		}
 
 		clear() {
-			this._map = {};
+			this.data = {};
 		}
 
 		shift(y) {
 			let map = {};
-			const keys = Object.keys(this._map);
+			const keys = Object.keys(this.data);
 
 			var above = keys.filter(key => ~~key < y);
 
 			above.forEach(a => {
-				map[~~a + R.dimen.BLOCK] = this.getLine(a).map(block => {
+
+				let line = this.getLine(a);
+
+				for (let x in line) {
+					let block = line[x];
+
 					switch (block.parent.rotation) {
 					    case   0: block.y += R.dimen.BLOCK; break;
 					    case  90: block.x += block.parent.scaleX*R.dimen.BLOCK; break;
@@ -79,12 +87,24 @@ const Tetris = (() => {
 					}
 					
 					block.parent.updateBounds();
-					return block;
-				});
-				this._map[a] = null;
+				}
+
+				map[~~a + R.dimen.BLOCK] = line;
+				this.data[a] = null;
 			});
 
-			Object.assign(this._map, map);
+			Object.assign(this.data, map);
+		}
+
+		toString() {
+			let t = '';
+
+			for ( let i in this.data ) {
+				let keys = Object.keys(this.data[i] || {}).map(k => Util.str_pad(k, ' ', 3));
+		  		t += Util.str_pad(i, ' ', 3) + ':' + keys.join(',') + ' (' + keys.length  + ')' + '\n';
+			}
+
+			return t;
 		}
 	}
 	
@@ -355,9 +375,11 @@ const Tetris = (() => {
 
 			for (let i = 0; i < blocks; ++i) {
 				let b = this.current.getChildAt(i);
-				var pt = b.localToLocal(b.center.x, b.center.y, this.field);
+				var pt = b.localToGlobal(b.center.x, b.center.y);
 				
-				if ( this.field.hitTest(pt.x, pt.y) ) {
+				pt = { x: Math.round(pt.x), y: Math.round(pt.y) };
+
+				if ( this.map.data[ pt.y ] && this.map.data[ pt.y ][ pt.x ] ) {
 					return true;
 				}
 			}
@@ -463,8 +485,9 @@ const Tetris = (() => {
 				set.push(pt.y);
 
 				let line = this.map.getLine(pt.y);
+				let rows = Object.keys( line );
 
-				if (line.length == R.dimen.FIELD_W) {
+				if (rows.length == R.dimen.FIELD_W) {
 					lines.push(line);
 					ys.push(pt.y);
 				}
@@ -475,7 +498,10 @@ const Tetris = (() => {
 			ys.sort().forEach(y => this.map.remove(y));
 
 			lines.forEach( line => {
-				line.forEach( block => {
+
+				for (let x in line) {
+					let block = line[x];
+
 					let f = block.parent;
 					f.removeChild(block);
 					f.updateCache();
@@ -483,7 +509,8 @@ const Tetris = (() => {
 					if ( f.numChildren == 0 ) {
 						f.parent.removeChild(f);
 					}
-				});
+				}
+
 				points = points * 2 + 100;
 			});
 

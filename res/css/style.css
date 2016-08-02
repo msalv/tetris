@@ -14,3 +14,7 @@ canvas {
 	margin: 0 auto;
 	background-color: #ffffff;
 }
+
+.loading {
+	background: #ffffff url("../img/loader.gif") no-repeat scroll 50% 50%;
+}
