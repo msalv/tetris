@@ -354,7 +354,7 @@ var Tetris = function () {
 		function BlocksMap() {
 			_classCallCheck(this, BlocksMap);
 
-			this._map = {};
+			this.data = {};
 		}
 
 		_createClass(BlocksMap, [{
@@ -364,25 +364,28 @@ var Tetris = function () {
 
 				blocks.forEach(function (block) {
 					var pt = block.localToGlobal(block.center.x, block.center.y);
-					_this._map[pt.y] = _this._map[pt.y] || [];
-					_this._map[pt.y].push(block);
+					pt = { x: Math.round(pt.x), y: Math.round(pt.y) };
+
+					_this.data[pt.y] = _this.data[pt.y] || {};
+					_this.data[pt.y][pt.x] = block;
 				});
 			}
 		}, {
 			key: 'getLine',
 			value: function getLine(y) {
-				return this._map[y] || [];
+				return this.data[Math.round(y)] || {};
 			}
 		}, {
 			key: 'remove',
 			value: function remove(y) {
-				this._map[y] = null;
+				y = Math.round(y);
+				this.data[y] = null;
 				this.shift(y);
 			}
 		}, {
 			key: 'clear',
 			value: function clear() {
-				this._map = {};
+				this.data = {};
 			}
 		}, {
 			key: 'shift',
@@ -390,14 +393,19 @@ var Tetris = function () {
 				var _this2 = this;
 
 				var map = {};
-				var keys = Object.keys(this._map);
+				var keys = Object.keys(this.data);
 
 				var above = keys.filter(function (key) {
 					return ~~key < y;
 				});
 
 				above.forEach(function (a) {
-					map[~~a + R.dimen.BLOCK] = _this2.getLine(a).map(function (block) {
+
+					var line = _this2.getLine(a);
+
+					for (var x in line) {
+						var block = line[x];
+
 						switch (block.parent.rotation) {
 							case 0:
 								block.y += R.dimen.BLOCK;break;
@@ -410,12 +418,27 @@ var Tetris = function () {
 						}
 
 						block.parent.updateBounds();
-						return block;
-					});
-					_this2._map[a] = null;
+					}
+
+					map[~~a + R.dimen.BLOCK] = line;
+					_this2.data[a] = null;
 				});
 
-				Object.assign(this._map, map);
+				Object.assign(this.data, map);
+			}
+		}, {
+			key: 'toString',
+			value: function toString() {
+				var t = '';
+
+				for (var i in this.data) {
+					var keys = Object.keys(this.data[i] || {}).map(function (k) {
+						return _util2.default.str_pad(k, ' ', 3);
+					});
+					t += _util2.default.str_pad(i, ' ', 3) + ':' + keys.join(',') + ' (' + keys.length + ')' + '\n';
+				}
+
+				return t;
 			}
 		}]);
 
@@ -656,9 +679,11 @@ var Tetris = function () {
 
 				for (var i = 0; i < blocks; ++i) {
 					var b = this.current.getChildAt(i);
-					var pt = b.localToLocal(b.center.x, b.center.y, this.field);
+					var pt = b.localToGlobal(b.center.x, b.center.y);
 
-					if (this.field.hitTest(pt.x, pt.y)) {
+					pt = { x: Math.round(pt.x), y: Math.round(pt.y) };
+
+					if (this.map.data[pt.y] && this.map.data[pt.y][pt.x]) {
 						return true;
 					}
 				}
@@ -772,8 +797,9 @@ var Tetris = function () {
 					set.push(pt.y);
 
 					var line = this.map.getLine(pt.y);
+					var rows = Object.keys(line);
 
-					if (line.length == R.dimen.FIELD_W) {
+					if (rows.length == R.dimen.FIELD_W) {
 						lines.push(line);
 						ys.push(pt.y);
 					}
@@ -786,15 +812,19 @@ var Tetris = function () {
 				});
 
 				lines.forEach(function (line) {
-					line.forEach(function (block) {
-						var f = block.parent;
-						f.removeChild(block);
+
+					for (var x in line) {
+						var _block = line[x];
+
+						var f = _block.parent;
+						f.removeChild(_block);
 						f.updateCache();
 
 						if (f.numChildren == 0) {
 							f.parent.removeChild(f);
 						}
-					});
+					}
+
 					points = points * 2 + 100;
 				});
 
