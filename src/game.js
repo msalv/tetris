@@ -39,7 +39,7 @@ const Tetris = (() => {
 
 	class BlocksMap {
 		constructor() {
-			this._map = {};
+			this.data = {};
 		}
 
 		add(blocks) {
@@ -47,28 +47,28 @@ const Tetris = (() => {
 				let pt = block.localToGlobal(block.center.x, block.center.y);
 				pt = { x: Math.round(pt.x), y: Math.round(pt.y) };
 
-				this._map[ pt.y ] = this._map[ pt.y ] || {};
-				this._map[ pt.y ][ pt.x ] = block;
+				this.data[ pt.y ] = this.data[ pt.y ] || {};
+				this.data[ pt.y ][ pt.x ] = block;
 			});
 		}
 
 		getLine(y) {
-			return this._map[ Math.round(y) ] || {};
+			return this.data[ Math.round(y) ] || {};
 		}
 
 		remove(y) {
 			y = Math.round(y);
-			this._map[y] = null;
+			this.data[y] = null;
 			this.shift(y);
 		}
 
 		clear() {
-			this._map = {};
+			this.data = {};
 		}
 
 		shift(y) {
 			let map = {};
-			const keys = Object.keys(this._map);
+			const keys = Object.keys(this.data);
 
 			var above = keys.filter(key => ~~key < y);
 
@@ -90,17 +90,17 @@ const Tetris = (() => {
 				}
 
 				map[~~a + R.dimen.BLOCK] = line;
-				this._map[a] = null;
+				this.data[a] = null;
 			});
 
-			Object.assign(this._map, map);
+			Object.assign(this.data, map);
 		}
 
 		toString() {
 			let t = '';
 
-			for ( let i in this._map ) {
-				let keys = Object.keys(this._map[i] || {}).map(k => Util.str_pad(k, ' ', 3));
+			for ( let i in this.data ) {
+				let keys = Object.keys(this.data[i] || {}).map(k => Util.str_pad(k, ' ', 3));
 		  		t += Util.str_pad(i, ' ', 3) + ':' + keys.join(',') + ' (' + keys.length  + ')' + '\n';
 			}
 
@@ -379,7 +379,7 @@ const Tetris = (() => {
 				
 				pt = { x: Math.round(pt.x), y: Math.round(pt.y) };
 
-				if ( this.map._map[ pt.y ] && this.map._map[ pt.y ][ pt.x ] ) {
+				if ( this.map.data[ pt.y ] && this.map.data[ pt.y ][ pt.x ] ) {
 					return true;
 				}
 			}
