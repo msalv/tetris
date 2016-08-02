@@ -45,16 +45,19 @@ const Tetris = (() => {
 		add(blocks) {
 			blocks.forEach(block => {
 				let pt = block.localToGlobal(block.center.x, block.center.y);
-				this._map[ pt.y ] = this._map[ pt.y ] || [];
-				this._map[ pt.y ].push( block );
+				pt = { x: Math.floor(pt.x), y: Math.floor(pt.y) };
+
+				this._map[ pt.y ] = this._map[ pt.y ] || {};
+				this._map[ pt.y ][ pt.x ] = block;
 			});
 		}
 
 		getLine(y) {
-			return this._map[y] || [];
+			return this._map[ Math.floor(y) ] || {};
 		}
 
 		remove(y) {
+			y = Math.floor(y);
 			this._map[ y ] = null;
 			this.shift(y);
 		}
@@ -70,7 +73,12 @@ const Tetris = (() => {
 			var above = keys.filter(key => ~~key < y);
 
 			above.forEach(a => {
-				map[~~a + R.dimen.BLOCK] = this.getLine(a).map(block => {
+
+				let line = this.getLine(a);
+
+				for (let x in line) {
+					let block = line[x];
+
 					switch (block.parent.rotation) {
 					    case   0: block.y += R.dimen.BLOCK; break;
 					    case  90: block.x += block.parent.scaleX*R.dimen.BLOCK; break;
@@ -79,12 +87,23 @@ const Tetris = (() => {
 					}
 					
 					block.parent.updateBounds();
-					return block;
-				});
+				}
+
+				map[~~a + R.dimen.BLOCK] = line;
 				this._map[a] = null;
 			});
 
 			Object.assign(this._map, map);
+		}
+
+		toString() {
+			let t = '';
+
+			for ( var i in m ) {
+		  		t += i + ':' + Object.keys(m[i]).join(',') + '\n';
+			}
+
+			return t;
 		}
 	}
 	
@@ -355,9 +374,13 @@ const Tetris = (() => {
 
 			for (let i = 0; i < blocks; ++i) {
 				let b = this.current.getChildAt(i);
-				var pt = b.localToLocal(b.center.x, b.center.y, this.field);
+				var pt = b.localToGlobal(b.center.x, b.center.y);
 				
-				if ( this.field.hitTest(pt.x, pt.y) ) {
+				pt = { x: Math.floor(pt.x), y: Math.floor(pt.y) };
+
+				console.log( this.map.toString(), pt );
+
+				if ( this.map._map[ pt.y ] && this.map._map[ pt.y ][ pt.x ] ) {
 					return true;
 				}
 			}
@@ -463,8 +486,9 @@ const Tetris = (() => {
 				set.push(pt.y);
 
 				let line = this.map.getLine(pt.y);
+				let rows = Object.keys( line );
 
-				if (line.length == R.dimen.FIELD_W) {
+				if (rows.length == R.dimen.FIELD_W) {
 					lines.push(line);
 					ys.push(pt.y);
 				}
@@ -475,7 +499,10 @@ const Tetris = (() => {
 			ys.sort().forEach(y => this.map.remove(y));
 
 			lines.forEach( line => {
-				line.forEach( block => {
+
+				for (let x in line) {
+					let block = line[x];
+
 					let f = block.parent;
 					f.removeChild(block);
 					f.updateCache();
@@ -483,7 +510,8 @@ const Tetris = (() => {
 					if ( f.numChildren == 0 ) {
 						f.parent.removeChild(f);
 					}
-				});
+				}
+
 				points = points * 2 + 100;
 			});
 
