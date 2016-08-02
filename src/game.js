@@ -99,8 +99,9 @@ const Tetris = (() => {
 		toString() {
 			let t = '';
 
-			for ( var i in m ) {
-		  		t += i + ':' + Object.keys(m[i]).join(',') + '\n';
+			for ( let i in this._map ) {
+				let keys = Object.keys(this._map[i] || {}).map(k => Util.str_pad(k, ' ', 3));
+		  		t += Util.str_pad(i, ' ', 3) + ':' + keys.join(',') + ' (' + keys.length  + ')' + '\n';
 			}
 
 			return t;
