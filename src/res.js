@@ -1,3 +1,5 @@
+export let dip = (value) => Math.floor(value * (window.devicePixelRatio || 1));
+
 export const colors = {
 	RED:    "#F44336",
 	BLUE:   "#2196F3",
@@ -12,14 +14,14 @@ export const colors = {
 };
 
 export const dimen = {
-	BLOCK:   32,
-	STROKE:   4,
+	BLOCK:   dip(32),
+	STROKE:   dip(4),
 	FIELD_W: 10, // blocks
 	FIELD_H: 20, // blocks
 	SIDEBAR_W: 5, // blocks
-	TEXT_BIG: "20px Roboto Mono",
-	TEXT_SMALL: "16px Roboto Mono",
-	TEXT_LARGE: "42px Roboto Mono",
+	TEXT_BIG: dip(20) + "px Roboto Mono",
+	TEXT_SMALL: dip(16) + "px Roboto Mono",
+	TEXT_LARGE: dip(42) + "px Roboto Mono",
 };
 
 export const keys = {
@@ -30,7 +32,7 @@ export const keys = {
 	LEFT:  37,
 	RIGHT: 39,
 	DOWN:  40
-}
+};
 
 export const strings = {
 	NEXT: "next",
@@ -38,4 +40,4 @@ export const strings = {
 	HISCORE: "hi-score",
 	ZEROS: "0000000",
 	PAUSED: "paused"
-}
+};

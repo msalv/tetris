@@ -292,7 +292,7 @@ var FiguresFactory = function () {
 
 exports.default = FiguresFactory;
 
-},{"./res":3,"./util":4}],2:[function(require,module,exports){
+},{"./res":3,"./util":5}],2:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -304,6 +304,10 @@ var R = _interopRequireWildcard(_res);
 var _util = require('./util');
 
 var _util2 = _interopRequireDefault(_util);
+
+var _swipehelper = require('./swipehelper');
+
+var _swipehelper2 = _interopRequireDefault(_swipehelper);
 
 var _figure = require('./figure');
 
@@ -330,8 +334,8 @@ var Tetris = function () {
 
 	function drawDebugGrid() {
 		var grid = new createjs.Container();
-		grid.x = -1;
-		grid.y = -1;
+		grid.x = R.dip(-1);
+		grid.y = R.dip(-1);
 
 		var block = _figure2.default.getInstance().produce().getChildAt(0);
 
@@ -454,6 +458,7 @@ var Tetris = function () {
 
 			this.stage = new createjs.Stage(canvas);
 			this.stage.snapToPixelEnabled = true;
+			createjs.Touch.enable(this.stage);
 
 			this.field = new createjs.Container();
 			this.placeholder = new createjs.Container();
@@ -525,13 +530,13 @@ var Tetris = function () {
 					drawDebugGrid.call(this);
 				}
 
-				this.field.set({ x: -1, y: -1 });
+				this.field.set({ x: R.dip(-1), y: R.dip(-1) });
 				this.stage.addChild(this.field);
 
 				//cache field
-				this.field.cache(1, 1, this.fieldWidth + R.dimen.STROKE, this.height);
+				this.field.cache(R.dip(1), R.dip(1), this.fieldWidth + R.dimen.STROKE, this.height);
 
-				this.placeholder.set({ x: -1, y: -1 });
+				this.placeholder.set({ x: R.dip(-1), y: R.dip(-1) });
 				this.stage.addChild(this.placeholder);
 
 				this.sidebar.set({ x: this.fieldWidth + R.dimen.STROKE, y: 0 });
@@ -588,6 +593,30 @@ var Tetris = function () {
 				document.onkeydown = function (e) {
 					return _this4.handleKeyDown(e);
 				};
+
+				if (createjs.Touch.isSupported()) {
+					_swipehelper2.default.on("down", function () {
+						_this4.fallDown();
+						_this4.stage.update();
+					});
+
+					_swipehelper2.default.on("left", function () {
+						_this4.moveLeft();
+						_this4.stage.update();
+					});
+
+					_swipehelper2.default.on("right", function () {
+						_this4.moveRight();
+						_this4.stage.update();
+					});
+
+					_swipehelper2.default.on("up", function () {
+						_this4.rotate();
+						_this4.stage.update();
+					});
+
+					_swipehelper2.default.bind();
+				}
 			}
 		}, {
 			key: 'setText',
@@ -596,7 +625,7 @@ var Tetris = function () {
 
 				var third = this.height / 3;
 
-				var strings = [{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: 20 }, { text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: third + 20 }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: third + 40, label: "score" }, { text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: this.height - third }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + 25, label: "hiscore" }];
+				var strings = [{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: R.dip(20) }, { text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: third + R.dip(20) }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: third + R.dip(40), label: "score" }, { text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: this.height - third }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + R.dip(25), label: "hiscore" }];
 
 				var x = this.sidebarWidth / 2;
 
@@ -637,16 +666,7 @@ var Tetris = function () {
 
 				switch (event.keyCode) {
 					case R.keys.UP:
-						this.current.rotate();
-
-						var threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
-						if (this.current.x >= threshold) {
-							this.current.x = threshold;
-						}
-
-						if (this.hitTest()) {
-							this.current.rotate(false);
-						}
+						this.rotate();
 						break;
 
 					case R.keys.LEFT:
@@ -715,6 +735,20 @@ var Tetris = function () {
 
 				if (this.hitTest()) {
 					this.restart();
+				}
+			}
+		}, {
+			key: 'rotate',
+			value: function rotate() {
+				this.current.rotate();
+
+				var threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
+				if (this.current.x >= threshold) {
+					this.current.x = threshold;
+				}
+
+				if (this.hitTest()) {
+					this.current.rotate(false);
 				}
 			}
 		}, {
@@ -892,7 +926,7 @@ var Tetris = function () {
 			key: 'next',
 			set: function set(figure) {
 				figure.x = this.fieldWidth + this.sidebarWidth / 2 - figure.width / 2;
-				figure.y = 50;
+				figure.y = R.dip(50);
 
 				this.stage.addChild(figure);
 
@@ -919,12 +953,16 @@ var Tetris = function () {
 
 window.Tetris = Tetris;
 
-},{"./figure":1,"./res":3,"./util":4}],3:[function(require,module,exports){
+},{"./figure":1,"./res":3,"./swipehelper":4,"./util":5}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+var dip = exports.dip = function dip(value) {
+	return Math.floor(value * (window.devicePixelRatio || 1));
+};
+
 var colors = exports.colors = {
 	RED: "#F44336",
 	BLUE: "#2196F3",
@@ -939,14 +977,14 @@ var colors = exports.colors = {
 };
 
 var dimen = exports.dimen = {
-	BLOCK: 32,
-	STROKE: 4,
+	BLOCK: dip(32),
+	STROKE: dip(4),
 	FIELD_W: 10, // blocks
 	FIELD_H: 20, // blocks
 	SIDEBAR_W: 5, // blocks
-	TEXT_BIG: "20px Roboto Mono",
-	TEXT_SMALL: "16px Roboto Mono",
-	TEXT_LARGE: "42px Roboto Mono"
+	TEXT_BIG: dip(20) + "px Roboto Mono",
+	TEXT_SMALL: dip(16) + "px Roboto Mono",
+	TEXT_LARGE: dip(42) + "px Roboto Mono"
 };
 
 var keys = exports.keys = {
@@ -968,6 +1006,104 @@ var strings = exports.strings = {
 };
 
 },{}],4:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var SwipeHelper = function () {
+
+	var instance = null;
+
+	var onSwipedLeft = null;
+	var onSwipedRight = null;
+	var onSwipedUp = null;
+	var onSwipedDown = null;
+
+	var x = null;
+	var y = null;
+
+	function handleTouchStart(e) {
+		if (!e.touches.length) {
+			return;
+		}
+
+		x = e.touches[0].clientX;
+		y = e.touches[0].clientY;
+	}
+
+	function handleTouchEnd(e) {
+		if (x === null || y === null) {
+			return;
+		}
+
+		var dx = x - e.changedTouches[0].clientX;
+		var dy = y - e.changedTouches[0].clientY;
+
+		if (Math.abs(dx - dy) < Number.EPSILON) {
+			// just a single touch
+			x = null;
+			y = null;
+			return;
+		}
+
+		if (Math.abs(dx) > Math.abs(dy)) {
+			dx > 0 ? typeof onSwipedLeft === "function" && onSwipedLeft() : typeof onSwipedRight === "function" && onSwipedRight();
+		} else {
+			dy > 0 ? typeof onSwipedUp === "function" && onSwipedUp() : typeof onSwipedDown === "function" && onSwipedDown();
+		}
+
+		x = null;
+		y = null;
+	}
+
+	var SwipeHelper = function () {
+		function SwipeHelper() {
+			_classCallCheck(this, SwipeHelper);
+		}
+
+		_createClass(SwipeHelper, null, [{
+			key: "bind",
+			value: function bind() {
+				if (instance === null) {
+					window.addEventListener("touchstart", handleTouchStart, false);
+					window.addEventListener("touchend", handleTouchEnd, false);
+
+					instance = new SwipeHelper();
+				}
+
+				return instance;
+			}
+		}, {
+			key: "on",
+			value: function on(direction, callback) {
+				switch (direction) {
+					case "left":
+						onSwipedLeft = callback;break;
+					case "right":
+						onSwipedRight = callback;break;
+					case "up":
+						onSwipedUp = callback;break;
+					case "down":
+						onSwipedDown = callback;break;
+				}
+			}
+		}]);
+
+		return SwipeHelper;
+	}();
+
+	return SwipeHelper;
+}();
+
+exports.default = SwipeHelper;
+
+},{}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

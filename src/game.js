@@ -1,5 +1,6 @@
 import * as R from './res'
 import Util from './util'
+import SwipeHelper from './swipehelper'
 import FiguresFactory from './figure'
 
 const Tetris = (() => {
@@ -17,8 +18,8 @@ const Tetris = (() => {
 
 	function drawDebugGrid() {
 		var grid = new createjs.Container();
-		grid.x = -1;
-		grid.y = -1;
+		grid.x = R.dip(-1);
+		grid.y = R.dip(-1);
 
 		var block = FiguresFactory.getInstance().produce().getChildAt(0);
 
@@ -115,6 +116,7 @@ const Tetris = (() => {
 
 			this.stage = new createjs.Stage(canvas);
 			this.stage.snapToPixelEnabled = true;
+			createjs.Touch.enable(this.stage);
 
 			this.field = new createjs.Container();
 			this.placeholder = new createjs.Container();
@@ -209,7 +211,7 @@ const Tetris = (() => {
 
 		set next(figure) {
 			figure.x = this.fieldWidth + this.sidebarWidth / 2 - figure.width / 2;
-			figure.y = 50;
+			figure.y = R.dip(50);
 
 			this.stage.addChild(figure);
 
@@ -225,13 +227,13 @@ const Tetris = (() => {
 				drawDebugGrid.call(this);
 			}
 
-			this.field.set({x: -1, y: -1});
+			this.field.set({x: R.dip(-1), y: R.dip(-1)});
 			this.stage.addChild(this.field);
 
 			//cache field
-			this.field.cache(1, 1, this.fieldWidth + R.dimen.STROKE, this.height);
+			this.field.cache(R.dip(1), R.dip(1), this.fieldWidth + R.dimen.STROKE, this.height);
 
-			this.placeholder.set({x: -1, y: -1});
+			this.placeholder.set({x: R.dip(-1), y: R.dip(-1)});
 			this.stage.addChild(this.placeholder);
 
 			this.sidebar.set({x: this.fieldWidth + R.dimen.STROKE, y: 0});
@@ -283,17 +285,41 @@ const Tetris = (() => {
 
 		bindEvents() {
 			document.onkeydown = (e) => this.handleKeyDown(e);
+
+			if ( createjs.Touch.isSupported() ) {
+				SwipeHelper.on("down", () => {
+					this.fallDown();
+					this.stage.update();
+				});
+
+				SwipeHelper.on("left", () => {
+					this.moveLeft();
+					this.stage.update();
+				});
+
+				SwipeHelper.on("right", () => {
+					this.moveRight();
+					this.stage.update();
+				});
+
+				SwipeHelper.on("up", () => {
+					this.rotate();
+					this.stage.update();
+				});
+
+				SwipeHelper.bind();
+			}
 		}
 
 		setText() {
 			const third = this.height / 3;
 
 			var strings = [
-				{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: 20 },
-				{ text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: third + 20 },
-				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: third + 40, label: "score" },
+				{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: R.dip(20) },
+				{ text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: third + R.dip(20) },
+				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: third + R.dip(40), label: "score" },
 				{ text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: this.height - third },
-				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + 25, label: "hiscore" }
+				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + R.dip(25), label: "hiscore" }
 			];
 
 			const x = this.sidebarWidth / 2;
@@ -334,16 +360,7 @@ const Tetris = (() => {
 
 			switch (event.keyCode) {
 				case R.keys.UP:
-					this.current.rotate();
-
-					var threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
-					if ( this.current.x >= threshold ) {
-						this.current.x = threshold;
-					}
-
-					if ( this.hitTest() ) {
-						this.current.rotate(false);
-					}
+					this.rotate();
 					break;
 
 				case R.keys.LEFT:
@@ -409,6 +426,19 @@ const Tetris = (() => {
 
 			if ( this.hitTest() ) {
 				this.restart();
+			}
+		}
+
+		rotate() {
+			this.current.rotate();
+
+			var threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
+			if ( this.current.x >= threshold ) {
+				this.current.x = threshold;
+			}
+
+			if ( this.hitTest() ) {
+				this.current.rotate(false);
 			}
 		}
 
