@@ -330,8 +330,8 @@ var Tetris = function () {
 
 	function drawDebugGrid() {
 		var grid = new createjs.Container();
-		grid.x = -1;
-		grid.y = -1;
+		grid.x = R.dip(-1);
+		grid.y = R.dip(-1);
 
 		var block = _figure2.default.getInstance().produce().getChildAt(0);
 
@@ -525,13 +525,13 @@ var Tetris = function () {
 					drawDebugGrid.call(this);
 				}
 
-				this.field.set({ x: -1, y: -1 });
+				this.field.set({ x: R.dip(-1), y: R.dip(-1) });
 				this.stage.addChild(this.field);
 
 				//cache field
-				this.field.cache(1, 1, this.fieldWidth + R.dimen.STROKE, this.height);
+				this.field.cache(R.dip(1), R.dip(1), this.fieldWidth + R.dimen.STROKE, this.height);
 
-				this.placeholder.set({ x: -1, y: -1 });
+				this.placeholder.set({ x: R.dip(-1), y: R.dip(-1) });
 				this.stage.addChild(this.placeholder);
 
 				this.sidebar.set({ x: this.fieldWidth + R.dimen.STROKE, y: 0 });
@@ -596,7 +596,7 @@ var Tetris = function () {
 
 				var third = this.height / 3;
 
-				var strings = [{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: 20 }, { text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: third + 20 }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: third + 40, label: "score" }, { text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: this.height - third }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + 25, label: "hiscore" }];
+				var strings = [{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: R.dip(20) }, { text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: third + R.dip(20) }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: third + R.dip(40), label: "score" }, { text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: this.height - third }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + R.dip(25), label: "hiscore" }];
 
 				var x = this.sidebarWidth / 2;
 
@@ -892,7 +892,7 @@ var Tetris = function () {
 			key: 'next',
 			set: function set(figure) {
 				figure.x = this.fieldWidth + this.sidebarWidth / 2 - figure.width / 2;
-				figure.y = 50;
+				figure.y = R.dip(50);
 
 				this.stage.addChild(figure);
 
@@ -925,6 +925,10 @@ window.Tetris = Tetris;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+var dip = exports.dip = function dip(value) {
+	return Math.floor(value * (window.devicePixelRatio || 1));
+};
+
 var colors = exports.colors = {
 	RED: "#F44336",
 	BLUE: "#2196F3",
@@ -939,14 +943,14 @@ var colors = exports.colors = {
 };
 
 var dimen = exports.dimen = {
-	BLOCK: 32,
-	STROKE: 4,
+	BLOCK: dip(32),
+	STROKE: dip(4),
 	FIELD_W: 10, // blocks
 	FIELD_H: 20, // blocks
 	SIDEBAR_W: 5, // blocks
-	TEXT_BIG: "20px Roboto Mono",
-	TEXT_SMALL: "16px Roboto Mono",
-	TEXT_LARGE: "42px Roboto Mono"
+	TEXT_BIG: dip(20) + "px Roboto Mono",
+	TEXT_SMALL: dip(16) + "px Roboto Mono",
+	TEXT_LARGE: dip(42) + "px Roboto Mono"
 };
 
 var keys = exports.keys = {
