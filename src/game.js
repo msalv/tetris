@@ -1,5 +1,6 @@
 import * as R from './res'
 import Util from './util'
+import SwipeHelper from './swipehelper'
 import FiguresFactory from './figure'
 
 const Tetris = (() => {
@@ -285,9 +286,33 @@ const Tetris = (() => {
 		bindEvents() {
 			document.onkeydown = (e) => this.handleKeyDown(e);
 
-			this.stage.on("stagemousedown", (e) => {
+			/*this.stage.on("stagemousedown", (e) => {
 				this.handleMouseDown(e);
-			});
+			});*/
+
+			if ( createjs.Touch.isSupported() ) {
+				SwipeHelper.on("down", () => {
+					this.fallDown();
+					this.stage.update();
+				});
+
+				SwipeHelper.on("left", () => {
+					this.moveLeft();
+					this.stage.update();
+				});
+
+				SwipeHelper.on("right", () => {
+					this.moveRight();
+					this.stage.update();
+				});
+
+				SwipeHelper.on("up", () => {
+					this.rotate();
+					this.stage.update();
+				});
+
+				SwipeHelper.bind();
+			}
 		}
 
 		setText() {
@@ -366,7 +391,7 @@ const Tetris = (() => {
 			this.stage.update();
 		}
 
-		handleMouseDown(e) {
+		/*handleMouseDown(e) {
 			if (this.paused) {
 				this.unpause();
 				this.stage.update();
@@ -385,11 +410,9 @@ const Tetris = (() => {
 			else {
 				this.moveLeft();
 			}
-			
-			//todo: this.fallDown();
 
 			this.stage.update();
-		}
+		}*/
 
 		hitTest() {
 			const blocks = this.current.numChildren;
