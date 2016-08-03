@@ -115,6 +115,7 @@ const Tetris = (() => {
 
 			this.stage = new createjs.Stage(canvas);
 			this.stage.snapToPixelEnabled = true;
+			createjs.Touch.enable(this.stage);
 
 			this.field = new createjs.Container();
 			this.placeholder = new createjs.Container();
@@ -283,6 +284,10 @@ const Tetris = (() => {
 
 		bindEvents() {
 			document.onkeydown = (e) => this.handleKeyDown(e);
+
+			this.stage.on("stagemousedown", (e) => {
+				this.handleMouseDown(e);
+			});
 		}
 
 		setText() {
@@ -334,16 +339,7 @@ const Tetris = (() => {
 
 			switch (event.keyCode) {
 				case R.keys.UP:
-					this.current.rotate();
-
-					var threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
-					if ( this.current.x >= threshold ) {
-						this.current.x = threshold;
-					}
-
-					if ( this.hitTest() ) {
-						this.current.rotate(false);
-					}
+					this.rotate();
 					break;
 
 				case R.keys.LEFT:
@@ -366,6 +362,31 @@ const Tetris = (() => {
 					this.pause();
 					break;
 			}
+
+			this.stage.update();
+		}
+
+		handleMouseDown(e) {
+			if (this.paused) {
+				this.unpause();
+				this.stage.update();
+				return;
+			}
+
+			var b = this.current.getBounds();
+			var pt = this.current.localToGlobal(b.x + b.width / 2, b.y + b.height / 2);
+
+			if ( e.stageY < pt.y ) {
+				this.rotate();
+			}
+			else if ( pt.x < e.stageX ) {
+				this.moveRight();
+			}
+			else {
+				this.moveLeft();
+			}
+			
+			//todo: this.fallDown();
 
 			this.stage.update();
 		}
@@ -409,6 +430,19 @@ const Tetris = (() => {
 
 			if ( this.hitTest() ) {
 				this.restart();
+			}
+		}
+
+		rotate() {
+			this.current.rotate();
+
+			var threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
+			if ( this.current.x >= threshold ) {
+				this.current.x = threshold;
+			}
+
+			if ( this.hitTest() ) {
+				this.current.rotate(false);
 			}
 		}
 
