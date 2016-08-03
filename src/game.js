@@ -286,10 +286,6 @@ const Tetris = (() => {
 		bindEvents() {
 			document.onkeydown = (e) => this.handleKeyDown(e);
 
-			/*this.stage.on("stagemousedown", (e) => {
-				this.handleMouseDown(e);
-			});*/
-
 			if ( createjs.Touch.isSupported() ) {
 				SwipeHelper.on("down", () => {
 					this.fallDown();
@@ -390,29 +386,6 @@ const Tetris = (() => {
 
 			this.stage.update();
 		}
-
-		/*handleMouseDown(e) {
-			if (this.paused) {
-				this.unpause();
-				this.stage.update();
-				return;
-			}
-
-			var b = this.current.getBounds();
-			var pt = this.current.localToGlobal(b.x + b.width / 2, b.y + b.height / 2);
-
-			if ( e.stageY < pt.y ) {
-				this.rotate();
-			}
-			else if ( pt.x < e.stageX ) {
-				this.moveRight();
-			}
-			else {
-				this.moveLeft();
-			}
-
-			this.stage.update();
-		}*/
 
 		hitTest() {
 			const blocks = this.current.numChildren;
