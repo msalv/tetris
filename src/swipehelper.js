@@ -74,6 +74,16 @@ const SwipeHelper = (() => {
 				case "down": onSwipedDown = callback; break;
 			}
 		}
+
+		static off(direction) {
+			switch (direction) {
+				case "left": onSwipedLeft = null; break;
+				case "right": onSwipedRight = null; break;
+				case "up": onSwipedUp = null; break;
+				case "down": onSwipedDown = null; break;
+				case undefined: onSwipedLeft = onSwipedRight = onSwipedUp = onSwipedDown = null; break;
+			}
+		}
 	}
 
 	return SwipeHelper;
