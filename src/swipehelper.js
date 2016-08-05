@@ -9,6 +9,19 @@ const SwipeHelper = (() => {
 
 	// private api
 
+	function getDirection(dx, dy) {
+	    let direction = null;
+
+	    if ( Math.abs(dx) > Math.abs(dy) ) {
+	    	direction = (dx > 0) ? LEFT : RIGHT;
+	    }
+	    else {
+	    	direction = (dy > 0) ? UP : DOWN;
+	    }
+
+	    return direction;
+	}
+
 	function handleTouchStart(e) {
 		if (!e.touches.length) {
 			return;
@@ -23,17 +36,9 @@ const SwipeHelper = (() => {
 		this.y0 = null;
 	}
 
-	function getDirection(dx, dy) {
-	    let direction = null;
-
-	    if ( Math.abs(dx) > Math.abs(dy) ) {
-	    	direction = (dx > 0) ? LEFT : RIGHT;
-	    }
-	    else {
-	    	direction = (dy > 0) ? UP : DOWN;
-	    }
-
-	    return direction;
+	function handleTouchCancel(e) {
+		this.x0 = null;
+		this.y0 = null;
 	}
 
 	function handleTouchMove(e) {
@@ -101,7 +106,7 @@ const SwipeHelper = (() => {
 			target.addEventListener("touchstart", e => handleTouchStart.call(this, e), false);
 			target.addEventListener("touchend", e => handleTouchEnd.call(this, e), false);
 			target.addEventListener("touchmove", e => handleTouchMove.call(this, e), false);
-			//target.addEventListener("touchcancel", e => handleTouchMove.call(this, e), false);
+			target.addEventListener("touchcancel", e => handleTouchCancel.call(this, e), false);
 		}
 
 		on(direction, callback) {
