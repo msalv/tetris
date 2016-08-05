@@ -288,7 +288,7 @@ const Tetris = (() => {
 
 			if ( createjs.Touch.isSupported() ) {
 				SwipeHelper.on("down", () => {
-					this.fallDown();
+					this.moveDown();
 					this.stage.update();
 				});
 
