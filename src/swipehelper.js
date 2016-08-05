@@ -113,18 +113,12 @@ const SwipeHelper = (() => {
 			}
 		}
 
-		off(direction) {
+		one(direction, callback) {
 			switch (direction) {
-				case LEFT: this.onSwipingLeft = null; break;
-				case RIGHT: this.onSwipingRight = null; break;
-				case UP: this.onSwipingUp = null; break;
-				case DOWN: this.onSwipingDown = null; break;
-				case undefined: 
-					this.onSwipingLeft = null;
-					this.onSwipingRight = null;
-					this.onSwipingUp = null;
-					this.onSwipingDown = null; 
-					break;
+				case LEFT: this.onSwipedLeft = callback; break;
+				case RIGHT: this.onSwipedRight = callback; break;
+				case UP: this.onSwipedUp = callback; break;
+				case DOWN: this.onSwipedDown = callback; break;
 			}
 		}
 	}
