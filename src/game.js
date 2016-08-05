@@ -287,27 +287,29 @@ const Tetris = (() => {
 			document.onkeydown = (e) => this.handleKeyDown(e);
 
 			if ( createjs.Touch.isSupported() ) {
-				SwipeHelper.on("down", () => {
+				let helper = new SwipeHelper(this.stage.canvas);
+
+				helper.on("down", () => {
 					this.moveDown();
 					this.stage.update();
 				});
 
-				SwipeHelper.on("left", () => {
+				helper.on("left", () => {
 					this.moveLeft();
 					this.stage.update();
 				});
 
-				SwipeHelper.on("right", () => {
+				helper.on("right", () => {
 					this.moveRight();
 					this.stage.update();
 				});
 
-				SwipeHelper.on("up", () => {
+				helper.on("up", () => {
 					this.rotate();
 					this.stage.update();
 				});
 
-				SwipeHelper.bind();
+				console.log(helper);
 			}
 		}
 

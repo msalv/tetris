@@ -1,39 +1,51 @@
 const SwipeHelper = (() => {
 
-	let instance = null;
+	const THRESHOLD = 24;
 
-	let onSwipingLeft = null;
-	let onSwipingRight = null;
-	let onSwipingUp = null;
-	let onSwipingDown = null;
+	const LEFT  = "left";
+	const RIGHT = "right";
+	const UP    = "up";
+	const DOWN  = "down";
 
-	let x = null;
-	let y = null;
+	// private api
 
 	function handleTouchStart(e) {
 		if (!e.touches.length) {
 			return;
 		}
 
-	    x = e.touches[0].clientX;
-	    y = e.touches[0].clientY;
+	    this.x0 = e.touches[0].clientX;
+	    this.y0 = e.touches[0].clientY;
 	}
 
 	function handleTouchEnd(e) {
-		x = null;
-		y = null;
+		this.x0 = null;
+		this.y0 = null;
+	}
+
+	function getDirection(dx, dy) {
+	    let direction = null;
+
+	    if ( Math.abs(dx) > Math.abs(dy) ) {
+	    	direction = (dx > 0) ? LEFT : RIGHT;
+	    }
+	    else {
+	    	direction = (dy > 0) ? UP : DOWN;
+	    }
+
+	    return direction;
 	}
 
 	function handleTouchMove(e) {
-	    if ( x === null || y === null ) {
+	    if ( this.x0 === null || this.y0 === null ) {
 	        return;
 	    }
 
-	    let nx = e.changedTouches[0].clientX;
-	    let ny = e.changedTouches[0].clientY;
+	    let x1 = e.changedTouches[0].clientX;
+	    let y1 = e.changedTouches[0].clientY;
 
-	    let dx = x - nx;
-	    let dy = y - ny;
+	    let dx = this.x0 - x1;
+	    let dy = this.y0 - y1;
 
 	    /*if ( Math.abs(dx - dy) < Number.EPSILON ) {
 	    	// just a single touch
@@ -42,79 +54,77 @@ const SwipeHelper = (() => {
 	    	return;
 	    }*/
 
-	    var direction = null;
-
-	    if ( Math.abs(dx) > Math.abs(dy) ) {
-	    	direction = (dx > 0) ? "left" : "right";
-	    }
-	    else {
-	    	direction = (dy > 0) ? "up" : "down";
-	    }
-
-	    var movedX = Math.abs(dx) >= 24;
-	    var movedY = Math.abs(dy) >= 24;
+	    var movedX = Math.abs(dx) >= THRESHOLD;
+	    var movedY = Math.abs(dy) >= THRESHOLD;
 
 		if ( !(movedX || movedY) ) {
 			return;
 		}
 
+		let direction = getDirection(dx, dy);
+
 	    switch (direction) {
-	    	case "left":
-				movedX && (typeof onSwipingLeft === "function") && onSwipingLeft()
+	    	case LEFT:
+				movedX && (typeof this.onSwipingLeft === "function") && this.onSwipingLeft();
 	    	break;
 				
-	    	case "right":
-				movedX && (typeof onSwipingRight === "function") && onSwipingRight()
+	    	case RIGHT:
+				movedX && (typeof this.onSwipingRight === "function") && this.onSwipingRight();
 	    	break;
 
-	    	case "up":
-	    		movedY && (typeof onSwipingUp === "function") && onSwipingUp()
+	    	case UP:
+	    		movedY && (typeof this.onSwipingUp === "function") && this.onSwipingUp();
 	    	break;
 
-	    	case "down":
-	    		movedY && (typeof onSwipingDown === "function") && onSwipingDown()
+	    	case DOWN:
+	    		movedY && (typeof this.onSwipingDown === "function") && this.onSwipingDown();
 	    	break;
 	    }
 
-	    x = nx;
-	    y = ny;
+	    this.x0 = x1;
+	    this.y0 = y1;
 	}
+
+	// public api
 
 	class SwipeHelper {
 
-		constructor() {
+		constructor(target) {
+			this.x0 = null;
+			this.y0 = null;
 
+			this.onSwipingLeft = null;
+			this.onSwipingRight = null;
+			this.onSwipingUp = null;
+			this.onSwipingDown = null;
+
+			target.addEventListener("touchstart", e => handleTouchStart.call(this, e), false);
+			target.addEventListener("touchend", e => handleTouchEnd.call(this, e), false);
+			target.addEventListener("touchmove", e => handleTouchMove.call(this, e), false);
+			//target.addEventListener("touchcancel", e => handleTouchMove.call(this, e), false);
 		}
 
-		static bind() {
-			if ( instance === null ) {
-				window.addEventListener("touchstart", handleTouchStart, false);
-				window.addEventListener("touchend", handleTouchEnd, false);
-				window.addEventListener("touchmove", handleTouchMove, false);
-				//window.addEventListener("touchcancel", handleCancel, false);
-
-				instance = new SwipeHelper();
-			}
-
-			return instance;
-		}
-
-		static on(direction, callback) {
+		on(direction, callback) {
 			switch (direction) {
-				case "left": onSwipingLeft = callback; break;
-				case "right": onSwipingRight = callback; break;
-				case "up": onSwipingUp = callback; break;
-				case "down": onSwipingDown = callback; break;
+				case LEFT: this.onSwipingLeft = callback; break;
+				case RIGHT: this.onSwipingRight = callback; break;
+				case UP: this.onSwipingUp = callback; break;
+				case DOWN: this.onSwipingDown = callback; break;
 			}
 		}
 
-		static off(direction) {
+		off(direction) {
 			switch (direction) {
-				case "left": onSwipingLeft = null; break;
-				case "right": onSwipingRight = null; break;
-				case "up": onSwipingUp = null; break;
-				case "down": onSwipingDown = null; break;
-				case undefined: onSwipingLeft = onSwipingRight = onSwipingUp = onSwipingDown = null; break;
+				case LEFT: this.onSwipingLeft = null; break;
+				case RIGHT: this.onSwipingRight = null; break;
+				case UP: this.onSwipingUp = null; break;
+				case DOWN: this.onSwipingDown = null; break;
+				case undefined: 
+					this.onSwipingLeft = null;
+					this.onSwipingRight = null;
+					this.onSwipingUp = null;
+					this.onSwipingDown = null; 
+					break;
 			}
 		}
 	}
