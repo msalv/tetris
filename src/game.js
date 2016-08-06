@@ -304,12 +304,19 @@ const Tetris = (() => {
 					this.stage.update();
 				});
 
+				helper = new SwipeHelper(document, 'end');
+
 				helper.on("up", () => {
 					this.rotate();
 					this.stage.update();
 				});
 
-				console.log(helper);
+				helper.on("touch", (x, y) => {					
+					if ( !this.paused && (y > this.current.y + this.current.height) ) {
+						this.fallDown();
+						this.stage.update();
+					}
+				});
 			}
 		}
 
