@@ -117,15 +117,6 @@ const SwipeHelper = (() => {
 				case DOWN: this.onSwipingDown = callback; break;
 			}
 		}
-
-		one(direction, callback) {
-			switch (direction) {
-				case LEFT: this.onSwipedLeft = callback; break;
-				case RIGHT: this.onSwipedRight = callback; break;
-				case UP: this.onSwipedUp = callback; break;
-				case DOWN: this.onSwipedDown = callback; break;
-			}
-		}
 	}
 
 	return SwipeHelper;
