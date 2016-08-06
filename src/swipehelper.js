@@ -1,6 +1,6 @@
 const SwipeHelper = (() => {
 
-	const THRESHOLD = 24;
+	const THRESHOLD = 32;
 
 	const LEFT  = "left";
 	const RIGHT = "right";
