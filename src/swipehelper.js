@@ -6,6 +6,7 @@ const SwipeHelper = (() => {
 	const RIGHT = "right";
 	const UP    = "up";
 	const DOWN  = "down";
+	const TOUCH = "touch";
 
 	// private api
 
@@ -52,12 +53,12 @@ const SwipeHelper = (() => {
 	    let dx = this.x0 - x1;
 	    let dy = this.y0 - y1;
 
-	    /*if ( Math.abs(dx - dy) < Number.EPSILON ) {
-	    	// just a single touch
-		    x = null;
-		    y = null;
+	    if ( Math.abs(dx - dy) < Number.EPSILON ) {
+	    	(typeof this.onTouched === "function") && this.onTouched(x1, y1);
+		    this.x0 = null;
+		    this.y0 = null;
 	    	return;
-	    }*/
+	    }
 
 	    var movedX = Math.abs(dx) >= THRESHOLD;
 	    var movedY = Math.abs(dy) >= THRESHOLD;
@@ -102,6 +103,7 @@ const SwipeHelper = (() => {
 			this.onSwipingRight = null;
 			this.onSwipingUp = null;
 			this.onSwipingDown = null;
+			this.onTouched = null;
 
 			target.addEventListener("touchstart", e => handleTouchStart.call(this, e), false);
 			target.addEventListener("touchend", e => handleTouchEnd.call(this, e), false);
@@ -115,6 +117,7 @@ const SwipeHelper = (() => {
 				case RIGHT: this.onSwipingRight = callback; break;
 				case UP: this.onSwipingUp = callback; break;
 				case DOWN: this.onSwipingDown = callback; break;
+				case TOUCH: this.onTouched = callback; break;
 			}
 		}
 	}
