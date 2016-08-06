@@ -95,7 +95,7 @@ const SwipeHelper = (() => {
 
 	class SwipeHelper {
 
-		constructor(target) {
+		constructor(target, mode = 'move') {
 			this.x0 = null;
 			this.y0 = null;
 
@@ -106,9 +106,16 @@ const SwipeHelper = (() => {
 			this.onTouched = null;
 
 			target.addEventListener("touchstart", e => handleTouchStart.call(this, e), false);
-			target.addEventListener("touchend", e => handleTouchEnd.call(this, e), false);
-			target.addEventListener("touchmove", e => handleTouchMove.call(this, e), false);
-			target.addEventListener("touchcancel", e => handleTouchCancel.call(this, e), false);
+
+			if ( mode == 'move' ) {
+				target.addEventListener("touchend", e => handleTouchEnd.call(this, e), false);
+				target.addEventListener("touchmove", e => handleTouchMove.call(this, e), false);
+				target.addEventListener("touchcancel", e => handleTouchCancel.call(this, e), false);
+			}
+			else {
+				target.addEventListener("touchend", e => handleTouchMove.call(this, e), false);
+				target.addEventListener("touchcancel", e => handleTouchCancel.call(this, e), false);
+			}
 		}
 
 		on(direction, callback) {
