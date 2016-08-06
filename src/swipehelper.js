@@ -8,6 +8,9 @@ const SwipeHelper = (() => {
 	const DOWN  = "down";
 	const TOUCH = "touch";
 
+	const MODE_MOVE = "move";
+	const MODE_END = "end";
+
 	// private api
 
 	function getDirection(dx, dy) {
@@ -54,10 +57,12 @@ const SwipeHelper = (() => {
 	    let dy = this.y0 - y1;
 
 	    if ( Math.abs(dx - dy) < Number.EPSILON ) {
-	    	(typeof this.onTouched === "function") && this.onTouched(x1, y1);
-		    this.x0 = null;
-		    this.y0 = null;
-	    	return;
+	    	if (this.mode = MODE_END && typeof this.onTouched === "function") {
+		    	this.onTouched(x1, y1);
+			    this.x0 = null;
+			    this.y0 = null;
+		    	return;
+	    	}
 	    }
 
 	    var movedX = Math.abs(dx) >= THRESHOLD;
@@ -95,9 +100,11 @@ const SwipeHelper = (() => {
 
 	class SwipeHelper {
 
-		constructor(target, mode = 'move') {
+		constructor(target, mode = MODE_MOVE) {
 			this.x0 = null;
 			this.y0 = null;
+
+			this.mode = mode;
 
 			this.onSwipingLeft = null;
 			this.onSwipingRight = null;
@@ -107,7 +114,7 @@ const SwipeHelper = (() => {
 
 			target.addEventListener("touchstart", e => handleTouchStart.call(this, e), false);
 
-			if ( mode == 'move' ) {
+			if ( this.mode == MODE_MOVE ) {
 				target.addEventListener("touchend", e => handleTouchEnd.call(this, e), false);
 				target.addEventListener("touchmove", e => handleTouchMove.call(this, e), false);
 				target.addEventListener("touchcancel", e => handleTouchCancel.call(this, e), false);
