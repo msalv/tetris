@@ -59,7 +59,9 @@ const Tetris = (() => {
 
 		remove(y) {
 			y = Math.round(y);
+
 			this.data[y] = null;
+
 			this.shift(y);
 		}
 
@@ -287,27 +289,36 @@ const Tetris = (() => {
 			document.onkeydown = (e) => this.handleKeyDown(e);
 
 			if ( createjs.Touch.isSupported() ) {
-				SwipeHelper.on("down", () => {
-					this.fallDown();
+				let helper = new SwipeHelper(this.stage.canvas);
+
+				helper.on("down", () => {
+					this.moveDown();
 					this.stage.update();
 				});
 
-				SwipeHelper.on("left", () => {
+				helper.on("left", () => {
 					this.moveLeft();
 					this.stage.update();
 				});
 
-				SwipeHelper.on("right", () => {
+				helper.on("right", () => {
 					this.moveRight();
 					this.stage.update();
 				});
 
-				SwipeHelper.on("up", () => {
+				helper = new SwipeHelper(document, 'end');
+
+				helper.on("up", () => {
 					this.rotate();
 					this.stage.update();
 				});
 
-				SwipeHelper.bind();
+				helper.on("touch", (x, y) => {					
+					if ( !this.paused && (y > this.current.y + this.current.height) ) {
+						this.fallDown();
+						this.stage.update();
+					}
+				});
 			}
 		}
 
@@ -508,11 +519,11 @@ const Tetris = (() => {
 
 				let pt = block.localToGlobal(block.center.x, block.center.y);
 
-				if ( set.indexOf(pt.y) !== -1 ) {
+				if ( set.indexOf( Math.round(pt.y) ) !== -1 ) {
 					continue;
 				}
 
-				set.push(pt.y);
+				set.push( Math.round(pt.y) );
 
 				let line = this.map.getLine(pt.y);
 				let rows = Object.keys( line );
@@ -525,7 +536,7 @@ const Tetris = (() => {
 
 			var points = 0;
 
-			ys.sort().forEach(y => this.map.remove(y));
+			ys.sort( (a,b) => a-b ).forEach(y => this.map.remove(y));
 
 			lines.forEach( line => {
 

@@ -383,7 +383,9 @@ var Tetris = function () {
 			key: 'remove',
 			value: function remove(y) {
 				y = Math.round(y);
+
 				this.data[y] = null;
+
 				this.shift(y);
 			}
 		}, {
@@ -595,27 +597,36 @@ var Tetris = function () {
 				};
 
 				if (createjs.Touch.isSupported()) {
-					_swipehelper2.default.on("down", function () {
-						_this4.fallDown();
+					var helper = new _swipehelper2.default(this.stage.canvas);
+
+					helper.on("down", function () {
+						_this4.moveDown();
 						_this4.stage.update();
 					});
 
-					_swipehelper2.default.on("left", function () {
+					helper.on("left", function () {
 						_this4.moveLeft();
 						_this4.stage.update();
 					});
 
-					_swipehelper2.default.on("right", function () {
+					helper.on("right", function () {
 						_this4.moveRight();
 						_this4.stage.update();
 					});
 
-					_swipehelper2.default.on("up", function () {
+					helper = new _swipehelper2.default(document, 'end');
+
+					helper.on("up", function () {
 						_this4.rotate();
 						_this4.stage.update();
 					});
 
-					_swipehelper2.default.bind();
+					helper.on("touch", function (x, y) {
+						if (!_this4.paused && y > _this4.current.y + _this4.current.height) {
+							_this4.fallDown();
+							_this4.stage.update();
+						}
+					});
 				}
 			}
 		}, {
@@ -824,11 +835,11 @@ var Tetris = function () {
 
 					var pt = block.localToGlobal(block.center.x, block.center.y);
 
-					if (set.indexOf(pt.y) !== -1) {
+					if (set.indexOf(Math.round(pt.y)) !== -1) {
 						continue;
 					}
 
-					set.push(pt.y);
+					set.push(Math.round(pt.y));
 
 					var line = this.map.getLine(pt.y);
 					var rows = Object.keys(line);
@@ -841,7 +852,9 @@ var Tetris = function () {
 
 				var points = 0;
 
-				ys.sort().forEach(function (y) {
+				ys.sort(function (a, b) {
+					return a - b;
+				}).forEach(function (y) {
 					return _this6.map.remove(y);
 				});
 
@@ -1018,79 +1031,160 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var SwipeHelper = function () {
 
-	var instance = null;
+	var THRESHOLD = 32;
 
-	var onSwipedLeft = null;
-	var onSwipedRight = null;
-	var onSwipedUp = null;
-	var onSwipedDown = null;
+	var LEFT = "left";
+	var RIGHT = "right";
+	var UP = "up";
+	var DOWN = "down";
+	var TOUCH = "touch";
 
-	var x = null;
-	var y = null;
+	var MODE_MOVE = "move";
+	var MODE_END = "end";
+
+	// private api
+
+	function getDirection(dx, dy) {
+		var direction = null;
+
+		if (Math.abs(dx) > Math.abs(dy)) {
+			direction = dx > 0 ? LEFT : RIGHT;
+		} else {
+			direction = dy > 0 ? UP : DOWN;
+		}
+
+		return direction;
+	}
 
 	function handleTouchStart(e) {
 		if (!e.touches.length) {
 			return;
 		}
 
-		x = e.touches[0].clientX;
-		y = e.touches[0].clientY;
+		this.x0 = e.touches[0].clientX;
+		this.y0 = e.touches[0].clientY;
 	}
 
 	function handleTouchEnd(e) {
-		if (x === null || y === null) {
-			return;
-		}
-
-		var dx = x - e.changedTouches[0].clientX;
-		var dy = y - e.changedTouches[0].clientY;
-
-		if (Math.abs(dx - dy) < Number.EPSILON) {
-			// just a single touch
-			x = null;
-			y = null;
-			return;
-		}
-
-		if (Math.abs(dx) > Math.abs(dy)) {
-			dx > 0 ? typeof onSwipedLeft === "function" && onSwipedLeft() : typeof onSwipedRight === "function" && onSwipedRight();
-		} else {
-			dy > 0 ? typeof onSwipedUp === "function" && onSwipedUp() : typeof onSwipedDown === "function" && onSwipedDown();
-		}
-
-		x = null;
-		y = null;
+		this.x0 = null;
+		this.y0 = null;
 	}
 
-	var SwipeHelper = function () {
-		function SwipeHelper() {
-			_classCallCheck(this, SwipeHelper);
+	function handleTouchCancel(e) {
+		this.x0 = null;
+		this.y0 = null;
+	}
+
+	function handleTouchMove(e) {
+		if (this.x0 === null || this.y0 === null) {
+			return;
 		}
 
-		_createClass(SwipeHelper, null, [{
-			key: "bind",
-			value: function bind() {
-				if (instance === null) {
-					window.addEventListener("touchstart", handleTouchStart, false);
-					window.addEventListener("touchend", handleTouchEnd, false);
+		var x1 = e.changedTouches[0].clientX;
+		var y1 = e.changedTouches[0].clientY;
 
-					instance = new SwipeHelper();
-				}
+		var dx = this.x0 - x1;
+		var dy = this.y0 - y1;
 
-				return instance;
+		if (Math.abs(dx) < Number.EPSILON && Math.abs(dy) < Number.EPSILON) {
+			if (this.mode = MODE_END && typeof this.onTouched === "function") {
+				this.onTouched(x1, y1);
+				this.x0 = null;
+				this.y0 = null;
+				return;
 			}
-		}, {
+		}
+
+		var movedX = Math.abs(dx) >= THRESHOLD;
+		var movedY = Math.abs(dy) >= THRESHOLD;
+
+		if (!(movedX || movedY)) {
+			return;
+		}
+
+		var direction = getDirection(dx, dy);
+
+		switch (direction) {
+			case LEFT:
+				movedX && typeof this.onSwipingLeft === "function" && this.onSwipingLeft();
+				break;
+
+			case RIGHT:
+				movedX && typeof this.onSwipingRight === "function" && this.onSwipingRight();
+				break;
+
+			case UP:
+				movedY && typeof this.onSwipingUp === "function" && this.onSwipingUp();
+				break;
+
+			case DOWN:
+				movedY && typeof this.onSwipingDown === "function" && this.onSwipingDown();
+				break;
+		}
+
+		this.x0 = x1;
+		this.y0 = y1;
+	}
+
+	// public api
+
+	var SwipeHelper = function () {
+		function SwipeHelper(target) {
+			var _this = this;
+
+			var mode = arguments.length <= 1 || arguments[1] === undefined ? MODE_MOVE : arguments[1];
+
+			_classCallCheck(this, SwipeHelper);
+
+			this.x0 = null;
+			this.y0 = null;
+
+			this.mode = mode;
+
+			this.onSwipingLeft = null;
+			this.onSwipingRight = null;
+			this.onSwipingUp = null;
+			this.onSwipingDown = null;
+			this.onTouched = null;
+
+			target.addEventListener("touchstart", function (e) {
+				return handleTouchStart.call(_this, e);
+			}, false);
+
+			if (this.mode == MODE_MOVE) {
+				target.addEventListener("touchend", function (e) {
+					return handleTouchEnd.call(_this, e);
+				}, false);
+				target.addEventListener("touchmove", function (e) {
+					return handleTouchMove.call(_this, e);
+				}, false);
+				target.addEventListener("touchcancel", function (e) {
+					return handleTouchCancel.call(_this, e);
+				}, false);
+			} else {
+				target.addEventListener("touchend", function (e) {
+					return handleTouchMove.call(_this, e);
+				}, false);
+				target.addEventListener("touchcancel", function (e) {
+					return handleTouchCancel.call(_this, e);
+				}, false);
+			}
+		}
+
+		_createClass(SwipeHelper, [{
 			key: "on",
 			value: function on(direction, callback) {
 				switch (direction) {
-					case "left":
-						onSwipedLeft = callback;break;
-					case "right":
-						onSwipedRight = callback;break;
-					case "up":
-						onSwipedUp = callback;break;
-					case "down":
-						onSwipedDown = callback;break;
+					case LEFT:
+						this.onSwipingLeft = callback;break;
+					case RIGHT:
+						this.onSwipingRight = callback;break;
+					case UP:
+						this.onSwipingUp = callback;break;
+					case DOWN:
+						this.onSwipingDown = callback;break;
+					case TOUCH:
+						this.onTouched = callback;break;
 				}
 			}
 		}]);
