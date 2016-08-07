@@ -534,7 +534,7 @@ const Tetris = (() => {
 
 			var points = 0;
 
-			ys.sort().forEach(y => this.map.remove(y));
+			ys.sort( (a,b) => a-b ).forEach(y => this.map.remove(y));
 
 			lines.forEach( line => {
 
