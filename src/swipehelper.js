@@ -56,7 +56,7 @@ const SwipeHelper = (() => {
 	    let dx = this.x0 - x1;
 	    let dy = this.y0 - y1;
 
-	    if ( Math.abs(dx - dy) < Number.EPSILON ) {
+	    if ( Math.abs(dx) < Number.EPSILON && Math.abs(dy) < Number.EPSILON ) {
 	    	if (this.mode = MODE_END && typeof this.onTouched === "function") {
 		    	this.onTouched(x1, y1);
 			    this.x0 = null;
