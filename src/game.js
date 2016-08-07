@@ -59,7 +59,9 @@ const Tetris = (() => {
 
 		remove(y) {
 			y = Math.round(y);
+
 			this.data[y] = null;
+
 			this.shift(y);
 		}
 
@@ -94,7 +96,7 @@ const Tetris = (() => {
 				this.data[a] = null;
 			});
 
-			this.data = Object.assign(this.data, map);
+			Object.assign(this.data, map);
 		}
 
 		toString() {
