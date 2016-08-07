@@ -94,7 +94,7 @@ const Tetris = (() => {
 				this.data[a] = null;
 			});
 
-			Object.assign(this.data, map);
+			this.data = Object.assign(this.data, map);
 		}
 
 		toString() {
@@ -517,11 +517,11 @@ const Tetris = (() => {
 
 				let pt = block.localToGlobal(block.center.x, block.center.y);
 
-				if ( set.indexOf(pt.y) !== -1 ) {
+				if ( set.indexOf( Math.round(pt.y) ) !== -1 ) {
 					continue;
 				}
 
-				set.push(pt.y);
+				set.push( Math.round(pt.y) );
 
 				let line = this.map.getLine(pt.y);
 				let rows = Object.keys( line );
