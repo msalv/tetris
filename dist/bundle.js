@@ -772,7 +772,7 @@ var Tetris = function () {
 				if (this.hitTest()) {
 					this.current.y -= R.dimen.BLOCK;
 					this.swap();
-				} else if (this.current.y >= threshold) {
+				} else if (this.current.y > threshold) {
 					this.current.y = threshold; // stick to bottom
 
 					this.swap();
