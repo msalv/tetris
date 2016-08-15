@@ -1,6 +1,5 @@
 import * as R from './res'
 import Util from './util'
-import SwipeHelper from './swipehelper'
 import FiguresFactory from './figure'
 
 const Tetris = (() => {
