@@ -289,35 +289,67 @@ const Tetris = (() => {
 			document.onkeydown = (e) => this.handleKeyDown(e);
 
 			if ( createjs.Touch.isSupported() ) {
-				let helper = new SwipeHelper(this.stage.canvas);
 
-				helper.on("down", () => {
-					this.moveDown();
+				let hammer = new Hammer.Manager(this.stage.canvas, {
+					recognizers: [
+						[Hammer.Tap],
+						[Hammer.Press],
+						[Hammer.Pan, { direction: Hammer.DIRECTION_HORIZONTAL | Hammer.DIRECTION_DOWN }],
+						[Hammer.Swipe, { direction: Hammer.DIRECTION_UP }, ['pan']],
+					]
+				});
+
+				hammer.on('tap', e => {
+					if (this.paused) {
+						return;
+					}
+
+					this.fallDown();
 					this.stage.update();
 				});
 
-				helper.on("left", () => {
-					this.moveLeft();
+				hammer.on('press', e => {
+					!this.paused ? this.pause() : this.unpause();
 					this.stage.update();
 				});
 
-				helper.on("right", () => {
-					this.moveRight();
-					this.stage.update();
-				});
+				hammer.on('swipeup', e => {
+					if (this.paused) {
+						return;
+					}
 
-				helper = new SwipeHelper(document, 'end');
-
-				helper.on("up", () => {
 					this.rotate();
 					this.stage.update();
 				});
 
-				helper.on("touch", (x, y) => {					
-					if ( !this.paused && (y > this.current.y + this.current.height) ) {
-						this.fallDown();
-						this.stage.update();
+				let distance = 0;
+
+				hammer.on('panstart panmove', e => {
+					if (this.paused) {
+						return;
 					}
+
+					if ( Math.abs(distance - e.distance) < 32 ) {
+						return;
+					}
+
+					distance = e.distance;
+
+					switch (e.direction) {
+						case Hammer.DIRECTION_LEFT:
+							this.moveLeft();
+							break;
+
+						case Hammer.DIRECTION_RIGHT:
+							this.moveRight();
+							break;
+
+						case Hammer.DIRECTION_DOWN:
+							this.moveDown();
+							break;
+					}
+
+					this.stage.update();
 				});
 			}
 		}
