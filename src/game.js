@@ -294,8 +294,7 @@ const Tetris = (() => {
 					recognizers: [
 						[Hammer.Tap],
 						[Hammer.Press],
-						[Hammer.Pan, { direction: Hammer.DIRECTION_HORIZONTAL | Hammer.DIRECTION_DOWN }],
-						[Hammer.Swipe, { direction: Hammer.DIRECTION_UP }, ['pan']],
+						[Hammer.Pan, { direction: Hammer.DIRECTION_ALL }]
 					]
 				});
 
@@ -314,39 +313,57 @@ const Tetris = (() => {
 					this.stage.update();
 				});
 
-				hammer.on('swipeup', e => {
-					if (this.paused) {
-						return;
-					}
+				let x0 = 0;
+				let y0 = 0;
 
-					this.rotate();
-					this.stage.update();
+				hammer.on('panend', e => {
+					x0 = null;
+					y0 = null;
 				});
 
-				let distance = 0;
+				hammer.on('panstart', e => {
+					x0 = 0;
+					y0 = 0;
+				});
 
-				hammer.on('panstart panmove', e => {
+				hammer.on('panmove', e => {
 					if (this.paused) {
 						return;
 					}
 
-					if ( Math.abs(distance - e.distance) < 32 ) {
+					if (x0 == null || y0 == null) {
 						return;
 					}
 
-					distance = e.distance;
+					let movedX = Math.abs(x0 - e.deltaX) >= 29;
+					let movedY = Math.abs(y0 - e.deltaY) >= 29;
+
+					if ( !(movedX || movedY) ) {
+						return;
+					}
+
+					x0 = e.deltaX;
+					y0 = e.deltaY;
 
 					switch (e.direction) {
 						case Hammer.DIRECTION_LEFT:
-							this.moveLeft();
+							movedX && this.moveLeft();
 							break;
 
 						case Hammer.DIRECTION_RIGHT:
-							this.moveRight();
+							movedX && this.moveRight();
 							break;
 
 						case Hammer.DIRECTION_DOWN:
-							this.moveDown();
+							movedY && this.moveDown();
+							break;
+
+						case Hammer.DIRECTION_UP:
+							if (movedY) {
+								x0 = null;
+								y0 = null;
+								this.rotate();
+							}
 							break;
 					}
 
