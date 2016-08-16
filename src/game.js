@@ -5,6 +5,7 @@ import FiguresFactory from './figure'
 const Tetris = (() => {
 
 	let instance = null;
+	let queue = null;
 	
 	let _current = null;
 	let _next = null;
@@ -140,6 +141,22 @@ const Tetris = (() => {
 				instance = new Tetris(canvas);
 			}
 			return instance;
+		}
+
+		loadResources() {
+			if ( queue === null ) {
+				let preferXHR = window.location.protocol.indexOf("http") === 0;
+
+				queue = new createjs.LoadQueue(preferXHR);
+				queue.addEventListener('complete', () => onResourcesLoaded.call(this));
+    			queue.installPlugin(createjs.Sound);
+
+				queue.loadManifest([
+					R.img.SOUND_ON, 
+					R.img.SOUND_OFF
+				]);
+			}
+			return queue;
 		}
 
 		pause() {
@@ -631,6 +648,21 @@ const Tetris = (() => {
 				this.updateTicker();
 			}
 		}
+	}
+
+	function onResourcesLoaded() {
+		let sound_off = new createjs.Bitmap(queue.getResult(R.img.SOUND_OFF.id));
+		let b = sound_off.getBounds();
+
+		sound_off.set({
+			x: this.sidebarWidth / 2 - b.width / 2,
+			y: this.height - b.height - R.dip(40)
+		});
+
+		// todo: set on click listener
+
+		this.sidebar.addChild(sound_off);
+		this.sidebar.updateCache();
 	}
 
 	return Tetris;
