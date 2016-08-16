@@ -1,5 +1,19 @@
 export let dip = (value) => Math.floor(value * (window.devicePixelRatio || 1));
 
+let fgte = function(a, b) {
+	return (Math.abs(a - b) < Number.EPSILON) || a > b;
+};
+
+export const pixelRatio = (function() {
+	let ratio = window.devicePixelRatio || 1;
+
+	if ( fgte(ratio, 4.0) ) return "xxxdpi";
+	if ( fgte(ratio, 3.0) ) return "xxdpi";
+	if ( fgte(ratio, 2.0) ) return "xdpi";
+	if ( fgte(ratio, 1.5) ) return "hdpi";
+	return "mdpi";
+})();
+
 export const colors = {
 	RED:    "#F44336",
 	BLUE:   "#2196F3",
