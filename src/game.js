@@ -9,9 +9,10 @@ const Tetris = (() => {
 	let _current = null;
 	let _next = null;
 
-	const INTERVAL    = 1000;
-	const SPEED_K     =  0.8;
-	const LEVELUP_PTS = 2000;
+	const INTERVAL    	   = 1000;
+	const SPEED_K     	   =  0.8;
+	const LEVELUP_PTS 	   = 2000;
+	const VIBRATE_DURATION =  200;
 
 	const DEBUG = false;
 
@@ -308,6 +309,7 @@ const Tetris = (() => {
 				});
 
 				hammer.on('press', e => {
+					Util.vibrate(VIBRATE_DURATION);
 					!this.paused ? this.pause() : this.unpause();
 					this.stage.update();
 				});
