@@ -55,3 +55,8 @@ export const strings = {
 	ZEROS: "0000000",
 	PAUSED: "paused"
 };
+
+export const img = {
+	SOUND_ON:  {"id": "sound_on",  "src": ["res/img", pixelRatio, "ic_volume_up_white_36dp.png"].join('/')},
+	SOUND_OFF: {"id": "sound_off", "src": ["res/img", pixelRatio, "ic_volume_off_white_36dp.png"].join('/')},
+};
