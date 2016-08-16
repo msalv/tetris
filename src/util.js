@@ -21,6 +21,12 @@ class Util {
 			return false;
 		}
 	}
+
+	static vibrate(duration) {
+		return (window.navigator && typeof window.navigator.vibrate === "function") 
+			? window.navigator.vibrate(duration)
+			: false;
+	}
 }
 
 export default Util;

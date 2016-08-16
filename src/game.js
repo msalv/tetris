@@ -1,6 +1,5 @@
 import * as R from './res'
 import Util from './util'
-import SwipeHelper from './swipehelper'
 import FiguresFactory from './figure'
 
 const Tetris = (() => {
@@ -10,9 +9,10 @@ const Tetris = (() => {
 	let _current = null;
 	let _next = null;
 
-	const INTERVAL    = 1000;
-	const SPEED_K     =  0.8;
-	const LEVELUP_PTS = 2000;
+	const INTERVAL    	   = 1000;
+	const SPEED_K     	   =  0.8;
+	const LEVELUP_PTS 	   = 2000;
+	const VIBRATE_DURATION =  200;
 
 	const DEBUG = false;
 
@@ -289,35 +289,85 @@ const Tetris = (() => {
 			document.onkeydown = (e) => this.handleKeyDown(e);
 
 			if ( createjs.Touch.isSupported() ) {
-				let helper = new SwipeHelper(this.stage.canvas);
 
-				helper.on("down", () => {
-					this.moveDown();
-					this.stage.update();
+				let hammer = new Hammer.Manager(this.stage.canvas, {
+					recognizers: [
+						[Hammer.Tap],
+						[Hammer.Press],
+						[Hammer.Pan, { direction: Hammer.DIRECTION_ALL }]
+					]
 				});
 
-				helper.on("left", () => {
-					this.moveLeft();
-					this.stage.update();
-				});
-
-				helper.on("right", () => {
-					this.moveRight();
-					this.stage.update();
-				});
-
-				helper = new SwipeHelper(document, 'end');
-
-				helper.on("up", () => {
-					this.rotate();
-					this.stage.update();
-				});
-
-				helper.on("touch", (x, y) => {					
-					if ( !this.paused && (y > this.current.y + this.current.height) ) {
-						this.fallDown();
-						this.stage.update();
+				hammer.on('tap', e => {
+					if (this.paused) {
+						return;
 					}
+
+					this.fallDown();
+					this.stage.update();
+				});
+
+				hammer.on('press', e => {
+					Util.vibrate(VIBRATE_DURATION);
+					!this.paused ? this.pause() : this.unpause();
+					this.stage.update();
+				});
+
+				let x0 = 0;
+				let y0 = 0;
+
+				hammer.on('panend', e => {
+					x0 = null;
+					y0 = null;
+				});
+
+				hammer.on('panstart', e => {
+					x0 = 0;
+					y0 = 0;
+				});
+
+				hammer.on('panmove', e => {
+					if (this.paused) {
+						return;
+					}
+
+					if (x0 == null || y0 == null) {
+						return;
+					}
+
+					let movedX = Math.abs(x0 - e.deltaX) >= 29;
+					let movedY = Math.abs(y0 - e.deltaY) >= 29;
+
+					if ( !(movedX || movedY) ) {
+						return;
+					}
+
+					x0 = e.deltaX;
+					y0 = e.deltaY;
+
+					switch (e.direction) {
+						case Hammer.DIRECTION_LEFT:
+							movedX && this.moveLeft();
+							break;
+
+						case Hammer.DIRECTION_RIGHT:
+							movedX && this.moveRight();
+							break;
+
+						case Hammer.DIRECTION_DOWN:
+							movedY && this.moveDown();
+							break;
+
+						case Hammer.DIRECTION_UP:
+							if (movedY) {
+								x0 = null;
+								y0 = null;
+								this.rotate();
+							}
+							break;
+					}
+
+					this.stage.update();
 				});
 			}
 		}
