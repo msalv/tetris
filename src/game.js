@@ -1,6 +1,7 @@
 import * as R from './res'
 import Util from './util'
 import FiguresFactory from './figure'
+import ToggleButton from './togglebutton'
 
 const Tetris = (() => {
 
@@ -119,6 +120,8 @@ const Tetris = (() => {
 
 			this.stage = new createjs.Stage(canvas);
 			this.stage.snapToPixelEnabled = true;
+			this.stage.enableMouseOver(10);
+
 			createjs.Touch.enable(this.stage);
 
 			this.field = new createjs.Container();
@@ -130,7 +133,11 @@ const Tetris = (() => {
 			this.hiscore = null;
 			this.overlay = null;
 
+			this.toggleBtn = null;
+
 			this.map = new BlocksMap();
+
+			createjs.Sound.muted = true;
 
 			this.bindEvents();
 			this.restart();
@@ -266,6 +273,10 @@ const Tetris = (() => {
 			this.sidebar.addChild(rect);
 
 			this.setText();
+
+			if (this.toggleBtn !== null) {
+				this.sidebar.addChild(this.toggleBtn);
+			}
 
 			// cache sidebar
 			this.sidebar.cache(0, 0, this.sidebarWidth, this.height);
@@ -660,16 +671,25 @@ const Tetris = (() => {
 
 	function onResourcesLoaded() {
 		let sound_off = new createjs.Bitmap(queue.getResult(R.img.SOUND_OFF.id));
-		let b = sound_off.getBounds();
+		let sound_on = new createjs.Bitmap(queue.getResult(R.img.SOUND_ON.id));
 
-		sound_off.set({
+		this.toggleBtn = new ToggleButton(sound_on, sound_off);
+
+		let b = this.toggleBtn.getBounds();
+
+		this.toggleBtn.set({
 			x: this.sidebarWidth / 2 - b.width / 2,
 			y: this.height - b.height - R.dip(40)
 		});
 
-		// todo: set on click listener
+		this.toggleBtn.on('click', e => {
+			createjs.Sound.muted = !createjs.Sound.muted;
+			this.toggleBtn.checked = !createjs.Sound.muted;
+			this.sidebar.updateCache();
+			this.stage.update();
+		})
 
-		this.sidebar.addChild(sound_off);
+		this.sidebar.addChild(this.toggleBtn);
 		this.sidebar.updateCache();
 	}
 
