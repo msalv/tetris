@@ -333,6 +333,14 @@ const Tetris = (() => {
 						return;
 					}
 
+					// exit if gui button was clicked
+					if ( this.soundToggle !== null ) {
+						let pt = this.soundToggle.globalToLocal(this.stage.mouseX, this.stage.mouseY);
+						if ( this.soundToggle.hitTest(pt.x, pt.y) ) {
+							return;
+						}
+					}
+
 					this.fallDown();
 					this.stage.update();
 				});
