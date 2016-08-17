@@ -531,11 +531,13 @@ const Tetris = (() => {
 			if ( this.hitTest() ) {
 				this.current.y -= R.dimen.BLOCK;
 				this.swap();
+				createjs.Sound.play(R.audio.FALL.id);
 			}
 			else if ( this.current.y > threshold) {
 				this.current.y = threshold; // stick to bottom
 				
 				this.swap();
+				createjs.Sound.play(R.audio.FALL.id);
 			}
 		}
 
