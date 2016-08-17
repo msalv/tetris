@@ -133,7 +133,7 @@ const Tetris = (() => {
 			this.hiscore = null;
 			this.overlay = null;
 
-			this.toggleBtn = null;
+			this.soundToggle = null;
 
 			this.map = new BlocksMap();
 
@@ -275,8 +275,8 @@ const Tetris = (() => {
 
 			this.setText();
 
-			if (this.toggleBtn !== null) {
-				this.sidebar.addChild(this.toggleBtn);
+			if (this.soundToggle !== null) {
+				this.sidebar.addChild(this.soundToggle);
 			}
 
 			// cache sidebar
@@ -674,23 +674,23 @@ const Tetris = (() => {
 		let sound_off = new createjs.Bitmap(queue.getResult(R.img.SOUND_OFF.id));
 		let sound_on = new createjs.Bitmap(queue.getResult(R.img.SOUND_ON.id));
 
-		this.toggleBtn = new ToggleButton(sound_on, sound_off);
+		this.soundToggle = new ToggleButton(sound_on, sound_off);
 
-		let b = this.toggleBtn.getBounds();
+		let b = this.soundToggle.getBounds();
 
-		this.toggleBtn.set({
+		this.soundToggle.set({
 			x: this.sidebarWidth / 2 - b.width / 2,
 			y: this.height - b.height - R.dip(40)
 		});
 
-		this.toggleBtn.on('click', e => {
+		this.soundToggle.on('click', e => {
 			createjs.Sound.muted = !createjs.Sound.muted;
-			this.toggleBtn.checked = !createjs.Sound.muted;
+			this.soundToggle.checked = !createjs.Sound.muted;
 			this.sidebar.updateCache();
 			this.stage.update();
-		})
+		});
 
-		this.sidebar.addChild(this.toggleBtn);
+		this.sidebar.addChild(this.soundToggle);
 		this.sidebar.updateCache();
 	}
 
