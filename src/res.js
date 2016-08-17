@@ -60,3 +60,10 @@ export const img = {
 	SOUND_ON:  {"id": "sound_on",  "src": ["res/img", pixelRatio, "ic_volume_up_white_36dp.png"].join('/')},
 	SOUND_OFF: {"id": "sound_off", "src": ["res/img", pixelRatio, "ic_volume_off_white_36dp.png"].join('/')},
 };
+
+export const audio = {
+	FALL: {"id": "fall",  "src": "res/audio/fall.mp3"},
+	LEVELUP: {"id": "levelup",  "src": "res/audio/levelup.mp3"},
+	REMOVE: {"id": "remove",  "src": "res/audio/remove.mp3"},
+	//ROTATE: {"id": "rotate",  "src": "res/audio/rotate.mp3"},
+}
