@@ -15,17 +15,22 @@ const ToggleButton = (() => {
 			this.checked_icon = checked_icon;
 			this.unchecked_icon = unchecked_icon;
 
+			let b = this.unchecked_icon.getBounds();
+			
+			const radius = b.width;
+			const cx = b.width / 2;
+			const cy = b.height / 2;
+
 			let circle = new createjs.Shape();
-			circle.graphics.beginFill(R.colors.BLACK).drawCircle(R.dip(18), R.dip(18), R.dip(24));
+			circle.graphics.beginFill(R.colors.BLACK).drawCircle(cx, cy, radius);
 
 			this.addChild(circle);
-
-			this.unchecked_icon.y += 1;
-			this.checked_icon.y += 1;
-
 			this.addChild(this.unchecked_icon);
 
-			this.cache(-R.dip(6), -R.dip(6), R.dip(48), R.dip(48));
+			this.cache(-cx, -cy, radius * 2, radius * 2);
+
+			this.regX = -cx;
+			this.regY = -cy;
 		}
 
 		set checked(checked) {
