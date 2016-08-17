@@ -153,7 +153,10 @@ const Tetris = (() => {
 
 				queue.loadManifest([
 					R.img.SOUND_ON, 
-					R.img.SOUND_OFF
+					R.img.SOUND_OFF,
+					R.audio.FALL,
+					R.audio.LEVELUP,
+					R.audio.REMOVE
 				]);
 			}
 			return queue;
