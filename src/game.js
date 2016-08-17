@@ -552,6 +552,7 @@ const Tetris = (() => {
 
 			this.current.y -= R.dimen.BLOCK;
 			this.swap();
+			createjs.Sound.play(R.audio.FALL.id);
 		}
 
 		moveLeft() {
@@ -626,6 +627,7 @@ const Tetris = (() => {
 			});
 
 			if (points > 0) {
+				createjs.Sound.play(R.audio.REMOVE.id);
 				this.updateScore(points);
 			}
 		}
@@ -648,6 +650,7 @@ const Tetris = (() => {
 
 			if ( points / LEVELUP_PTS >= this.level+1 ) {
 				++this.level;
+				createjs.Sound.play(R.audio.LEVELUP.id);
 				this.updateTicker();
 			}
 		}
