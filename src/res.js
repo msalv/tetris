@@ -57,8 +57,8 @@ export const strings = {
 };
 
 export const img = {
-	SOUND_ON:  {"id": "sound_on",  "src": ["res/img", pixelRatio, "ic_volume_up_white_36dp.png"].join('/')},
-	SOUND_OFF: {"id": "sound_off", "src": ["res/img", pixelRatio, "ic_volume_off_white_36dp.png"].join('/')},
+	SOUND_ON:  {"id": "sound_on",  "src": ["res/img", pixelRatio, "ic_volume_up_white_24dp.png"].join('/')},
+	SOUND_OFF: {"id": "sound_off", "src": ["res/img", pixelRatio, "ic_volume_off_white_24dp.png"].join('/')},
 };
 
 export const audio = {
