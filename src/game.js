@@ -138,6 +138,7 @@ const Tetris = (() => {
 			this.map = new BlocksMap();
 
 			createjs.Sound.muted = true;
+			createjs.Sound.alternateExtensions = ["ogg"];
 
 			this.bindEvents();
 			this.restart();
