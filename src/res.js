@@ -52,6 +52,8 @@ export const strings = {
 	NEXT: "next",
 	SCORE: "score",
 	HISCORE: "hi-score",
+	LEVEL: "level",
+	LINES: "lines",
 	ZEROS: "0000000",
 	PAUSED: "paused"
 };

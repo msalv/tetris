@@ -130,6 +130,9 @@ const Tetris = (() => {
 			this.sidebar = new createjs.Container();
 
 			this.level = 0;
+			
+			this.level_label = null;
+			this.lines = null;
 			this.score = null;
 			this.hiscore = null;
 			this.overlay = null;
@@ -411,14 +414,18 @@ const Tetris = (() => {
 		}
 
 		setText() {
-			const third = this.height / 3;
+			const offset = this.height / 3;
 
 			var strings = [
 				{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: R.dip(20) },
-				{ text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: third + R.dip(20) },
-				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: third + R.dip(40), label: "score" },
-				{ text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: this.height - third },
-				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + R.dip(25), label: "hiscore" }
+				{ text: R.strings.LEVEL, size: R.dimen.TEXT_BIG, y: offset + R.dip(20) },
+				{ text: Util.str_pad(1, '0', R.strings.ZEROS.length), size: R.dimen.TEXT_SMALL, y: offset + R.dip(40), label: "level_label" },
+				{ text: R.strings.LINES, size: R.dimen.TEXT_BIG, y: offset + R.dip(60) },
+				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: offset + R.dip(80), label: "lines" },
+				{ text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: offset + R.dip(100) },
+				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: offset + R.dip(125), label: "score" },
+				{ text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: offset + R.dip(140) },
+				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: offset + R.dip(170), label: "hiscore" }
 			];
 
 			const x = this.sidebarWidth / 2;
@@ -648,13 +655,13 @@ const Tetris = (() => {
 
 			if (points > 0) {
 				createjs.Sound.play(R.audio.REMOVE.id);
-				this.updateScore(points);
+				this.updateScore(points, lines.length);
 			}
 		}
 
-		updateScore(points) {
+		updateScore(points, lines) {
 			points = points + parseInt(this.score.text);
-			var text = Util.str_pad(points, '0', R.strings.ZEROS.length);
+			let text = Util.str_pad(points, '0', R.strings.ZEROS.length);
 			
 			this.score.text = text;
 
@@ -666,13 +673,23 @@ const Tetris = (() => {
 				}
 			}
 
-			this.sidebar.updateCache();
+			lines = lines + parseInt(this.lines.text);
+			this.lines.text = Util.str_pad(lines, '0', R.strings.ZEROS.length);
 
 			if ( points / LEVELUP_PTS >= this.level+1 ) {
-				++this.level;
-				createjs.Sound.play(R.audio.LEVELUP.id);
-				this.updateTicker();
+				this.levelUp();
 			}
+
+			this.sidebar.updateCache();
+		}
+
+		levelUp() {
+			++this.level;
+
+			this.level_label.text = Util.str_pad(this.level + 1, '0', R.strings.ZEROS.length);
+
+			createjs.Sound.play(R.audio.LEVELUP.id);
+			this.updateTicker();
 		}
 	}
 
