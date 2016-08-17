@@ -7,9 +7,9 @@ let fgte = function(a, b) {
 export const pixelRatio = (function() {
 	let ratio = window.devicePixelRatio || 1;
 
-	if ( fgte(ratio, 4.0) ) return "xxxdpi";
-	if ( fgte(ratio, 3.0) ) return "xxdpi";
-	if ( fgte(ratio, 2.0) ) return "xdpi";
+	if ( fgte(ratio, 4.0) ) return "xxxhdpi";
+	if ( fgte(ratio, 3.0) ) return "xxhdpi";
+	if ( fgte(ratio, 2.0) ) return "xhdpi";
 	if ( fgte(ratio, 1.5) ) return "hdpi";
 	return "mdpi";
 })();
