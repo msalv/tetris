@@ -123,6 +123,7 @@ const Tetris = (() => {
 			this.stage.enableMouseOver(10);
 
 			createjs.Touch.enable(this.stage);
+			createjs.Sound.alternateExtensions = ["ogg"];
 
 			this.field = new createjs.Container();
 			this.placeholder = new createjs.Container();
@@ -136,9 +137,6 @@ const Tetris = (() => {
 			this.soundToggle = null;
 
 			this.map = new BlocksMap();
-
-			createjs.Sound.muted = true;
-			createjs.Sound.alternateExtensions = ["ogg"];
 
 			this.bindEvents();
 			this.restart();
@@ -671,6 +669,8 @@ const Tetris = (() => {
 	}
 
 	function onResourcesLoaded() {
+		createjs.Sound.muted = true;
+
 		let sound_off = new createjs.Bitmap(queue.getResult(R.img.SOUND_OFF.id));
 		let sound_on = new createjs.Bitmap(queue.getResult(R.img.SOUND_ON.id));
 
