@@ -1,10 +1,12 @@
 import * as R from './res'
 import Util from './util'
 import FiguresFactory from './figure'
+import ToggleButton from './togglebutton'
 
 const Tetris = (() => {
 
 	let instance = null;
+	let queue = null;
 	
 	let _current = null;
 	let _next = null;
@@ -118,16 +120,24 @@ const Tetris = (() => {
 
 			this.stage = new createjs.Stage(canvas);
 			this.stage.snapToPixelEnabled = true;
+			this.stage.enableMouseOver(10);
+
 			createjs.Touch.enable(this.stage);
+			createjs.Sound.alternateExtensions = ["ogg"];
 
 			this.field = new createjs.Container();
 			this.placeholder = new createjs.Container();
 			this.sidebar = new createjs.Container();
 
 			this.level = 0;
+			
+			this.level_label = null;
+			this.lines = null;
 			this.score = null;
 			this.hiscore = null;
 			this.overlay = null;
+
+			this.soundToggle = null;
 
 			this.map = new BlocksMap();
 
@@ -140,6 +150,25 @@ const Tetris = (() => {
 				instance = new Tetris(canvas);
 			}
 			return instance;
+		}
+
+		loadResources() {
+			if ( queue === null ) {
+				let preferXHR = window.location.protocol.indexOf("http") === 0;
+
+				queue = new createjs.LoadQueue(preferXHR);
+				queue.addEventListener('complete', () => onResourcesLoaded.call(this));
+    			queue.installPlugin(createjs.Sound);
+
+				queue.loadManifest([
+					R.img.SOUND_ON, 
+					R.img.SOUND_OFF,
+					R.audio.FALL,
+					R.audio.LEVELUP,
+					R.audio.REMOVE
+				]);
+			}
+			return queue;
 		}
 
 		pause() {
@@ -247,6 +276,10 @@ const Tetris = (() => {
 
 			this.setText();
 
+			if (this.soundToggle !== null) {
+				this.sidebar.addChild(this.soundToggle);
+			}
+
 			// cache sidebar
 			this.sidebar.cache(0, 0, this.sidebarWidth, this.height);
 		}
@@ -301,6 +334,14 @@ const Tetris = (() => {
 				hammer.on('tap', e => {
 					if (this.paused) {
 						return;
+					}
+
+					// exit if gui button was clicked
+					if ( this.soundToggle !== null ) {
+						let pt = this.soundToggle.globalToLocal(this.stage.mouseX, this.stage.mouseY);
+						if ( this.soundToggle.hitTest(pt.x, pt.y) ) {
+							return;
+						}
 					}
 
 					this.fallDown();
@@ -373,14 +414,18 @@ const Tetris = (() => {
 		}
 
 		setText() {
-			const third = this.height / 3;
+			const offset = this.height / 3;
 
 			var strings = [
 				{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: R.dip(20) },
-				{ text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: third + R.dip(20) },
-				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: third + R.dip(40), label: "score" },
-				{ text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: this.height - third },
-				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + R.dip(25), label: "hiscore" }
+				{ text: R.strings.LEVEL, size: R.dimen.TEXT_BIG, y: offset + R.dip(20) },
+				{ text: Util.str_pad(1, '0', R.strings.ZEROS.length), size: R.dimen.TEXT_SMALL, y: offset + R.dip(40), label: "level_label" },
+				{ text: R.strings.LINES, size: R.dimen.TEXT_BIG, y: offset + R.dip(60) },
+				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: offset + R.dip(80), label: "lines" },
+				{ text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: offset + R.dip(100) },
+				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: offset + R.dip(125), label: "score" },
+				{ text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: offset + R.dip(140) },
+				{ text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: offset + R.dip(170), label: "hiscore" }
 			];
 
 			const x = this.sidebarWidth / 2;
@@ -511,11 +556,13 @@ const Tetris = (() => {
 			if ( this.hitTest() ) {
 				this.current.y -= R.dimen.BLOCK;
 				this.swap();
+				createjs.Sound.play(R.audio.FALL.id);
 			}
 			else if ( this.current.y > threshold) {
 				this.current.y = threshold; // stick to bottom
 				
 				this.swap();
+				createjs.Sound.play(R.audio.FALL.id);
 			}
 		}
 
@@ -532,6 +579,7 @@ const Tetris = (() => {
 
 			this.current.y -= R.dimen.BLOCK;
 			this.swap();
+			createjs.Sound.play(R.audio.FALL.id);
 		}
 
 		moveLeft() {
@@ -606,13 +654,14 @@ const Tetris = (() => {
 			});
 
 			if (points > 0) {
-				this.updateScore(points);
+				createjs.Sound.play(R.audio.REMOVE.id);
+				this.updateScore(points, lines.length);
 			}
 		}
 
-		updateScore(points) {
+		updateScore(points, lines) {
 			points = points + parseInt(this.score.text);
-			var text = Util.str_pad(points, '0', R.strings.ZEROS.length);
+			let text = Util.str_pad(points, '0', R.strings.ZEROS.length);
 			
 			this.score.text = text;
 
@@ -624,13 +673,50 @@ const Tetris = (() => {
 				}
 			}
 
-			this.sidebar.updateCache();
+			lines = lines + parseInt(this.lines.text);
+			this.lines.text = Util.str_pad(lines, '0', R.strings.ZEROS.length);
 
 			if ( points / LEVELUP_PTS >= this.level+1 ) {
-				++this.level;
-				this.updateTicker();
+				this.levelUp();
 			}
+
+			this.sidebar.updateCache();
 		}
+
+		levelUp() {
+			++this.level;
+
+			this.level_label.text = Util.str_pad(this.level + 1, '0', R.strings.ZEROS.length);
+
+			createjs.Sound.play(R.audio.LEVELUP.id);
+			this.updateTicker();
+		}
+	}
+
+	function onResourcesLoaded() {
+		createjs.Sound.muted = true;
+
+		let sound_off = new createjs.Bitmap(queue.getResult(R.img.SOUND_OFF.id));
+		let sound_on = new createjs.Bitmap(queue.getResult(R.img.SOUND_ON.id));
+
+		this.soundToggle = new ToggleButton(sound_on, sound_off);
+
+		let b = this.soundToggle.getBounds();
+
+		this.soundToggle.set({
+			x: this.sidebarWidth / 2 - b.width / 2,
+			y: this.height - b.height - R.dip(40)
+		});
+
+		this.soundToggle.on('click', e => {
+			createjs.Sound.muted = !createjs.Sound.muted;
+			this.soundToggle.checked = !createjs.Sound.muted;
+			this.sidebar.updateCache();
+			this.stage.update();
+		});
+
+		this.sidebar.addChild(this.soundToggle);
+		this.sidebar.updateCache();
 	}
 
 	return Tetris;

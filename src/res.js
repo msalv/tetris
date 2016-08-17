@@ -1,5 +1,19 @@
 export let dip = (value) => Math.floor(value * (window.devicePixelRatio || 1));
 
+let fgte = function(a, b) {
+	return (Math.abs(a - b) < Number.EPSILON) || a > b;
+};
+
+export const pixelRatio = (function() {
+	let ratio = window.devicePixelRatio || 1;
+
+	if ( fgte(ratio, 4.0) ) return "xxxhdpi";
+	if ( fgte(ratio, 3.0) ) return "xxhdpi";
+	if ( fgte(ratio, 2.0) ) return "xhdpi";
+	if ( fgte(ratio, 1.5) ) return "hdpi";
+	return "mdpi";
+})();
+
 export const colors = {
 	RED:    "#F44336",
 	BLUE:   "#2196F3",
@@ -38,6 +52,19 @@ export const strings = {
 	NEXT: "next",
 	SCORE: "score",
 	HISCORE: "hi-score",
+	LEVEL: "level",
+	LINES: "lines",
 	ZEROS: "0000000",
 	PAUSED: "paused"
 };
+
+export const img = {
+	SOUND_ON:  {"id": "sound_on",  "src": ["res/img", pixelRatio, "ic_volume_up_white_24dp.png"].join('/')},
+	SOUND_OFF: {"id": "sound_off", "src": ["res/img", pixelRatio, "ic_volume_off_white_24dp.png"].join('/')},
+};
+
+export const audio = {
+	FALL: {"id": "fall", "src": "res/audio/fall.mp3"},
+	LEVELUP: {"id": "levelup",  "src": "res/audio/levelup.mp3"},
+	REMOVE: {"id": "remove",  "src": "res/audio/remove.mp3"}
+}
