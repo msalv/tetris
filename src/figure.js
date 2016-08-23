@@ -21,7 +21,7 @@ const Block = (() => {
 		}
 
 		get center() {
-			var b = this.getBounds();
+			let b = this.getBounds();
 			return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
 		}
 	}
@@ -73,7 +73,7 @@ const Figure = (() => {
 		}
 
 		updateReg() {
-			var i = this.rotation / 90;
+			let i = this.rotation / 90;
 			if (this.scaleX < 0) {
 				i = (this.regXY.length - 1) - i;
 			}
@@ -89,7 +89,7 @@ const Figure = (() => {
 
 		rotate(clockwise = true) {
 			const degree = clockwise ? 90 : -90; 
-			var rotation = this.rotation + degree;
+			let rotation = this.rotation + degree;
 
 			this.rotation = (rotation >= 360) ? 0 : (rotation < 0 ? 270 : rotation);
 
@@ -98,12 +98,12 @@ const Figure = (() => {
 		}
 
 		get width() {
-			var bounds = this.getBounds();
+			let bounds = this.getBounds();
 			return (this.rotation / 90) % 2 == 0 ? bounds.width : bounds.height;
 		}
 
 		get height() {
-			var bounds = this.getBounds();
+			let bounds = this.getBounds();
 			return (this.rotation / 90) % 2 == 0 ? bounds.height : bounds.width;
 		}
 	}
@@ -199,15 +199,15 @@ const FiguresFactory = (() => {
 		}
 
 		produce() {
-			var F = classes[ Util.random(0, classes.length) ];
-			var color = colors[ Util.random(0, colors.length) ];
-			var rotation = Util.random(0, degrees.length);
-			var doFlip = !!Util.random(0, 2);
+			let F = classes[ Util.random(0, classes.length) ];
+			let color = colors[ Util.random(0, colors.length) ];
+			let rotation = Util.random(0, degrees.length);
+			let doFlip = !!Util.random(0, 2);
 			
-			var f = new F(color);
+			let f = new F(color);
 
 			doFlip && f.flip();
-			for (var i = 0; i < rotation; ++i) {
+			for (let i = 0; i < rotation; ++i) {
 				f.rotate();
 			}
 

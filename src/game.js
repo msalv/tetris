@@ -19,11 +19,11 @@ const Tetris = (() => {
 	const DEBUG = false;
 
 	function drawDebugGrid() {
-		var grid = new createjs.Container();
+		let grid = new createjs.Container();
 		grid.x = R.dip(-1);
 		grid.y = R.dip(-1);
 
-		var block = FiguresFactory.getInstance().produce().getChildAt(0);
+		let block = FiguresFactory.getInstance().produce().getChildAt(0);
 
 		block.color = R.colors.WHITE;
 		block.alpha = 0.3;
@@ -75,7 +75,7 @@ const Tetris = (() => {
 			let map = {};
 			const keys = Object.keys(this.data);
 
-			var above = keys.filter(key => ~~key < y);
+			let above = keys.filter(key => ~~key < y);
 
 			above.forEach(a => {
 
@@ -270,7 +270,7 @@ const Tetris = (() => {
 			this.sidebar.set({x: this.fieldWidth + R.dimen.STROKE, y: 0});
 			this.stage.addChild(this.sidebar);
 			
-			var rect = new createjs.Shape();
+			let rect = new createjs.Shape();
 			rect.graphics.beginFill(R.colors.GRAY).drawRect(0, 0, this.sidebarWidth, this.height);
 			this.sidebar.addChild(rect);
 
@@ -292,7 +292,7 @@ const Tetris = (() => {
 
 			this.overlay = new createjs.Container();
 
-			var shape = new createjs.Shape();
+			let shape = new createjs.Shape();
 			shape.graphics.clear()
 				.beginFill(R.colors.WHITE)
 				.drawRect(0, 0, this.width, this.height);
@@ -301,12 +301,12 @@ const Tetris = (() => {
 
 			this.overlay.addChild(shape);
 
-			var text = new createjs.Text(R.strings.PAUSED, R.dimen.TEXT_LARGE, R.colors.BLACK);
-			var b = text.getBounds();
+			let text = new createjs.Text(R.strings.PAUSED, R.dimen.TEXT_LARGE, R.colors.BLACK);
+			let b = text.getBounds();
 			text.set({
 				x: this.fieldWidth / 2 - b.width / 2,
 				y: this.height / 2 - b.height / 2
-			})
+			});
 
 			this.overlay.addChild(text);
 
@@ -416,7 +416,7 @@ const Tetris = (() => {
 		setText() {
 			const offset = this.height / 3;
 
-			var strings = [
+			let strings = [
 				{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: R.dip(20) },
 				{ text: R.strings.LEVEL, size: R.dimen.TEXT_BIG, y: offset + R.dip(20) },
 				{ text: Util.str_pad(1, '0', R.strings.ZEROS.length), size: R.dimen.TEXT_SMALL, y: offset + R.dip(40), label: "level_label" },
@@ -446,7 +446,7 @@ const Tetris = (() => {
 			});
 
 			if ( Util.storageAvailable('localStorage') ) {
-				var hiscore = window.localStorage.getItem('hiscore');
+				let hiscore = window.localStorage.getItem('hiscore');
 				if ( hiscore ) {
 					this.hiscore.text = Util.str_pad(hiscore, '0', R.strings.ZEROS.length);
 				}
@@ -498,7 +498,7 @@ const Tetris = (() => {
 
 			for (let i = 0; i < blocks; ++i) {
 				let b = this.current.getChildAt(i);
-				var pt = b.localToGlobal(b.center.x, b.center.y);
+				let pt = b.localToGlobal(b.center.x, b.center.y);
 				
 				pt = { x: Math.round(pt.x), y: Math.round(pt.y) };
 
@@ -538,7 +538,7 @@ const Tetris = (() => {
 		rotate() {
 			this.current.rotate();
 
-			var threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
+			let threshold = this.fieldWidth - this.current.width + R.dimen.STROKE * 2;
 			if ( this.current.x >= threshold ) {
 				this.current.x = threshold;
 			}
@@ -549,7 +549,7 @@ const Tetris = (() => {
 		}
 
 		moveDown() {
-			var threshold = this.height - this.current.height + R.dimen.STROKE;
+			let threshold = this.height - this.current.height + R.dimen.STROKE;
 
 			this.current.y += R.dimen.BLOCK;
 
@@ -567,7 +567,7 @@ const Tetris = (() => {
 		}
 
 		fallDown() {
-			var threshold = this.height - this.current.height + R.dimen.STROKE;
+			let threshold = this.height - this.current.height + R.dimen.STROKE;
 
 			while ( !this.hitTest() ) {
 				this.current.y += R.dimen.BLOCK;
@@ -608,9 +608,9 @@ const Tetris = (() => {
 
 		removeLines() {
 			const num = this.current.numChildren;
-			var lines = [];
-			var ys = [];
-			var set = [];
+			let lines = [];
+			let ys = [];
+			let set = [];
 
 			for ( let i = 0; i < num; ++i ) {
 				let block = this.current.getChildAt(i);
@@ -632,7 +632,7 @@ const Tetris = (() => {
 				}
 			}
 
-			var points = 0;
+			let points = 0;
 
 			ys.sort( (a,b) => a-b ).forEach(y => this.map.remove(y));
 
