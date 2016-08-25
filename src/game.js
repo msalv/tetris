@@ -305,13 +305,27 @@ const Tetris = (() => {
 			this.overlay.addChild(shape);
 
 			let text = new createjs.Text(R.strings.PAUSED, R.dimen.TEXT_LARGE, R.colors.BLACK);
+
 			let b = text.getBounds();
 			text.set({
-				x: this.fieldWidth / 2 - b.width / 2,
-				y: this.height / 2 - b.height / 2
+				x: this.fieldWidth / 2,// - b.width / 2,
+				y: this.height / 2 - b.height / 2,
+				textAlign: "center",
+				lineHeight: R.dip(50)
 			});
 
 			this.overlay.addChild(text);
+
+			let t = !createjs.Touch.isSupported() ? R.strings.PAUSE_HINT : R.strings.PAUSE_HINT_TAP;
+
+			let hint = new createjs.Text(t, R.dimen.TEXT_SMALL, R.colors.BLACK);
+			hint.set({
+				x: this.fieldWidth / 2,
+				y: text.y + R.dip(100),
+				textAlign: "center"
+			});
+
+			this.overlay.addChild(hint);
 
 			this.stage.addChild(this.overlay);
 			this.overlay.cache(0, 0, this.width, this.height);
