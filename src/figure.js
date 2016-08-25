@@ -39,9 +39,6 @@ const Figure = (() => {
 			this.regXY = [];
 		}
 
-		tick(event) {
-		}
-
 		setup() {
 			for (let i = 0; i < this.coords.length; ++i) {
 				let block = new Block(this.color);
