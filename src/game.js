@@ -296,7 +296,7 @@ const Tetris = (() => {
 			this.overlay = new createjs.Container();
 
 			let shape = new createjs.Shape();
-			shape.graphics.clear()
+			shape.graphics
 				.beginFill(R.colors.WHITE)
 				.drawRect(0, 0, this.width, this.height);
 
