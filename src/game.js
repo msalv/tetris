@@ -187,6 +187,8 @@ const Tetris = (() => {
 		}
 
 		restart() {
+			this.stopped = false;
+
 			this.pause();
 
 			this.field.removeAllChildren();
@@ -208,6 +210,13 @@ const Tetris = (() => {
 			this.updateTicker();
 
 			this.unpause();
+		}
+
+		stop() {
+			this.stopped = true;
+			this.pause();
+			this.showFinalScore();
+			this.stage.update();
 		}
 
 		updateTicker() {
@@ -335,6 +344,36 @@ const Tetris = (() => {
 			this.stage.removeChild(this.overlay);
 		}
 
+		showFinalScore() {
+			if ( this.overlay === null ) {
+				return;
+			}
+
+			this.overlay.filters = [this.invertFilter];
+
+			let label = this.overlay.getChildAt(this.overlay.numChildren - 2);
+			label.text = [R.strings.FINAL_SCORE, parseInt(this.score.text)].join('\n');
+
+			let hint = this.overlay.getChildAt(this.overlay.numChildren - 1);
+			hint.text = (!createjs.Touch.isSupported()) ? R.strings.RESTART_HINT : R.strings.RESTART_HINT_TAP;
+
+			this.overlay.updateCache();
+		}
+
+		hideFinalScore() {
+			if (this.overlay !== null) {
+				let label = this.overlay.getChildAt(this.overlay.numChildren - 2);
+				label.text = R.strings.PAUSED;
+
+				let hint = this.overlay.getChildAt(this.overlay.numChildren - 1);
+				hint.text = (!createjs.Touch.isSupported()) ? R.strings.PAUSE_HINT : R.strings.PAUSE_HINT_TAP;
+
+				this.overlay.filters = null;
+				this.overlay.updateCache();
+			}
+			this.restart();
+		}
+
 		bindEvents() {
 			document.onkeydown = (e) => this.handleKeyDown(e);
 
@@ -349,6 +388,11 @@ const Tetris = (() => {
 				});
 
 				hammer.on('tap', e => {
+					if (this.stopped) {
+						this.hideFinalScore();
+						return;
+					}
+
 					if (this.paused) {
 						return;
 					}
@@ -366,6 +410,10 @@ const Tetris = (() => {
 				});
 
 				hammer.on('press', e => {
+					if (this.stopped) {
+						return;
+					}
+
 					Util.vibrate(VIBRATE_DURATION);
 					!this.paused ? this.pause() : this.unpause();
 					this.stage.update();
@@ -473,6 +521,13 @@ const Tetris = (() => {
 		handleKeyDown(event) {
 			event = event || window.event;
 
+			if ( this.stopped ) {
+				if ( event.keyCode == R.keys.SPACE ) {
+					this.hideFinalScore();
+				}
+				return;
+			}
+
 			if ( this.paused ) {
 				if ( event.keyCode == R.keys.ESC ) {
 					this.unpause();
@@ -548,7 +603,7 @@ const Tetris = (() => {
 			this.next = FiguresFactory.getInstance().produce();
 
 			if ( this.hitTest() ) {
-				this.restart();
+				this.stop();
 			}
 		}
 
