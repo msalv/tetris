@@ -297,6 +297,8 @@ const Tetris = (() => {
 		}
 
 		showPauseOverlay() {
+			// todo: make it a class PauseContainer
+
 			if ( this.overlay !== null ) {
 				this.stage.addChild(this.overlay);
 				return;
