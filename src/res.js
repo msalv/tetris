@@ -55,7 +55,12 @@ export const strings = {
 	LEVEL: "level",
 	LINES: "lines",
 	ZEROS: "0000000",
-	PAUSED: "paused"
+	PAUSED: "paused",
+	PAUSE_HINT: "press esc to continue",
+	PAUSE_HINT_TAP: "long tap to continue",
+	RESTART_HINT: "press space to continue",
+	RESTART_HINT_TAP: "tap to continue",
+	FINAL_SCORE: "Final Score"
 };
 
 export const img = {
