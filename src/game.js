@@ -130,6 +130,8 @@ const Tetris = (() => {
 			this.sidebar = new createjs.Container();
 
 			this.level = 0;
+			this.paused = false;
+			this.stopped = false;
 			
 			this.level_label = null;
 			this.lines = null;
