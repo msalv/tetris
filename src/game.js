@@ -168,7 +168,8 @@ const Tetris = (() => {
 					R.img.SOUND_OFF,
 					R.audio.FALL,
 					R.audio.LEVELUP,
-					R.audio.REMOVE
+					R.audio.REMOVE,
+					R.audio.GAMEOVER
 				]);
 			}
 			return queue;
@@ -213,6 +214,8 @@ const Tetris = (() => {
 		}
 
 		stop() {
+			createjs.Sound.play(R.audio.GAMEOVER.id);
+
 			this.stopped = true;
 			this.pause();
 			this.showFinalScore();
