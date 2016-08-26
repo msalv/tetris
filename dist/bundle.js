@@ -78,9 +78,6 @@ var Figure = function () {
 		}
 
 		_createClass(Figure, [{
-			key: 'tick',
-			value: function tick(event) {}
-		}, {
 			key: 'setup',
 			value: function setup() {
 				for (var i = 0; i < this.coords.length; ++i) {
@@ -292,7 +289,7 @@ var FiguresFactory = function () {
 
 exports.default = FiguresFactory;
 
-},{"./res":3,"./util":5}],2:[function(require,module,exports){
+},{"./res":4,"./util":6}],2:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -305,13 +302,17 @@ var _util = require('./util');
 
 var _util2 = _interopRequireDefault(_util);
 
-var _swipehelper = require('./swipehelper');
-
-var _swipehelper2 = _interopRequireDefault(_swipehelper);
-
 var _figure = require('./figure');
 
 var _figure2 = _interopRequireDefault(_figure);
+
+var _togglebutton = require('./togglebutton');
+
+var _togglebutton2 = _interopRequireDefault(_togglebutton);
+
+var _pausecontainer = require('./pausecontainer');
+
+var _pausecontainer2 = _interopRequireDefault(_pausecontainer);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -322,6 +323,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Tetris = function () {
 
 	var instance = null;
+	var queue = null;
 
 	var _current = null;
 	var _next = null;
@@ -329,6 +331,7 @@ var Tetris = function () {
 	var INTERVAL = 1000;
 	var SPEED_K = 0.8;
 	var LEVELUP_PTS = 2000;
+	var VIBRATE_DURATION = 200;
 
 	var DEBUG = false;
 
@@ -460,16 +463,26 @@ var Tetris = function () {
 
 			this.stage = new createjs.Stage(canvas);
 			this.stage.snapToPixelEnabled = true;
+			this.stage.enableMouseOver(10);
+
 			createjs.Touch.enable(this.stage);
+			createjs.Sound.alternateExtensions = ["ogg"];
 
 			this.field = new createjs.Container();
 			this.placeholder = new createjs.Container();
 			this.sidebar = new createjs.Container();
 
 			this.level = 0;
+			this.paused = false;
+			this.stopped = false;
+
+			this.level_label = null;
+			this.lines = null;
 			this.score = null;
 			this.hiscore = null;
 			this.overlay = null;
+
+			this.soundToggle = null;
 
 			this.map = new BlocksMap();
 
@@ -478,6 +491,24 @@ var Tetris = function () {
 		}
 
 		_createClass(Tetris, [{
+			key: 'loadResources',
+			value: function loadResources() {
+				var _this3 = this;
+
+				if (queue === null) {
+					var preferXHR = window.location.protocol.indexOf("http") === 0;
+
+					queue = new createjs.LoadQueue(preferXHR);
+					queue.addEventListener('complete', function () {
+						return onResourcesLoaded.call(_this3);
+					});
+					queue.installPlugin(createjs.Sound);
+
+					queue.loadManifest([R.img.SOUND_ON, R.img.SOUND_OFF, R.audio.FALL, R.audio.LEVELUP, R.audio.REMOVE, R.audio.GAMEOVER]);
+				}
+				return queue;
+			}
+		}, {
 			key: 'pause',
 			value: function pause() {
 				createjs.Ticker.removeAllEventListeners("tick");
@@ -487,10 +518,10 @@ var Tetris = function () {
 		}, {
 			key: 'unpause',
 			value: function unpause() {
-				var _this3 = this;
+				var _this4 = this;
 
 				createjs.Ticker.on("tick", function (event) {
-					return _this3.tick(event);
+					return _this4.tick(event);
 				});
 				this.paused = false;
 				this.hidePauseOverlay();
@@ -498,6 +529,8 @@ var Tetris = function () {
 		}, {
 			key: 'restart',
 			value: function restart() {
+				this.stopped = false;
+
 				this.pause();
 
 				this.field.removeAllChildren();
@@ -519,6 +552,16 @@ var Tetris = function () {
 				this.updateTicker();
 
 				this.unpause();
+			}
+		}, {
+			key: 'stop',
+			value: function stop() {
+				createjs.Sound.play(R.audio.GAMEOVER.id);
+
+				this.stopped = true;
+				this.pause();
+				this.showFinalScore();
+				this.stage.update();
 			}
 		}, {
 			key: 'updateTicker',
@@ -550,6 +593,10 @@ var Tetris = function () {
 
 				this.setText();
 
+				if (this.soundToggle !== null) {
+					this.sidebar.addChild(this.soundToggle);
+				}
+
 				// cache sidebar
 				this.sidebar.cache(0, 0, this.sidebarWidth, this.height);
 			}
@@ -561,26 +608,14 @@ var Tetris = function () {
 					return;
 				}
 
-				this.overlay = new createjs.Container();
+				this.overlay = new _pausecontainer2.default(this.width, this.height);
 
-				var shape = new createjs.Shape();
-				shape.graphics.clear().beginFill(R.colors.WHITE).drawRect(0, 0, this.width, this.height);
+				this.overlay.text = R.strings.PAUSED;
+				this.overlay.hint = !createjs.Touch.isSupported() ? R.strings.PAUSE_HINT : R.strings.PAUSE_HINT_TAP;
 
-				shape.alpha = 0.8;
-
-				this.overlay.addChild(shape);
-
-				var text = new createjs.Text(R.strings.PAUSED, R.dimen.TEXT_LARGE, R.colors.BLACK);
-				var b = text.getBounds();
-				text.set({
-					x: this.fieldWidth / 2 - b.width / 2,
-					y: this.height / 2 - b.height / 2
-				});
-
-				this.overlay.addChild(text);
+				this.overlay.updateCache();
 
 				this.stage.addChild(this.overlay);
-				this.overlay.cache(0, 0, this.width, this.height);
 			}
 		}, {
 			key: 'hidePauseOverlay',
@@ -588,55 +623,148 @@ var Tetris = function () {
 				this.stage.removeChild(this.overlay);
 			}
 		}, {
+			key: 'showFinalScore',
+			value: function showFinalScore() {
+				if (this.overlay === null) {
+					return;
+				}
+
+				this.overlay.inverted = true;
+
+				this.overlay.text = [R.strings.FINAL_SCORE, parseInt(this.score.text)].join('\n');
+				this.overlay.hint = !createjs.Touch.isSupported() ? R.strings.RESTART_HINT : R.strings.RESTART_HINT_TAP;
+
+				this.overlay.updateCache();
+			}
+		}, {
+			key: 'hideFinalScore',
+			value: function hideFinalScore() {
+				if (this.overlay !== null) {
+
+					this.overlay.inverted = false;
+
+					this.overlay.text = R.strings.PAUSED;
+					this.overlay.hint = !createjs.Touch.isSupported() ? R.strings.PAUSE_HINT : R.strings.PAUSE_HINT_TAP;
+
+					this.overlay.updateCache();
+				}
+				this.restart();
+			}
+		}, {
 			key: 'bindEvents',
 			value: function bindEvents() {
-				var _this4 = this;
+				var _this5 = this;
 
 				document.onkeydown = function (e) {
-					return _this4.handleKeyDown(e);
+					return _this5.handleKeyDown(e);
 				};
 
 				if (createjs.Touch.isSupported()) {
-					var helper = new _swipehelper2.default(this.stage.canvas);
+					(function () {
 
-					helper.on("down", function () {
-						_this4.moveDown();
-						_this4.stage.update();
-					});
+						var hammer = new Hammer.Manager(_this5.stage.canvas, {
+							recognizers: [[Hammer.Tap], [Hammer.Press], [Hammer.Pan, { direction: Hammer.DIRECTION_ALL }]]
+						});
 
-					helper.on("left", function () {
-						_this4.moveLeft();
-						_this4.stage.update();
-					});
+						hammer.on('tap', function (e) {
+							if (_this5.stopped) {
+								_this5.hideFinalScore();
+								return;
+							}
 
-					helper.on("right", function () {
-						_this4.moveRight();
-						_this4.stage.update();
-					});
+							if (_this5.paused) {
+								return;
+							}
 
-					helper = new _swipehelper2.default(document, 'end');
+							// exit if gui button was clicked
+							if (_this5.soundToggle !== null) {
+								var pt = _this5.soundToggle.globalToLocal(_this5.stage.mouseX, _this5.stage.mouseY);
+								if (_this5.soundToggle.hitTest(pt.x, pt.y)) {
+									return;
+								}
+							}
 
-					helper.on("up", function () {
-						_this4.rotate();
-						_this4.stage.update();
-					});
+							_this5.fallDown();
+							_this5.stage.update();
+						});
 
-					helper.on("touch", function (x, y) {
-						if (!_this4.paused && y > _this4.current.y + _this4.current.height) {
-							_this4.fallDown();
-							_this4.stage.update();
-						}
-					});
+						hammer.on('press', function (e) {
+							if (_this5.stopped) {
+								return;
+							}
+
+							_util2.default.vibrate(VIBRATE_DURATION);
+							!_this5.paused ? _this5.pause() : _this5.unpause();
+							_this5.stage.update();
+						});
+
+						var x0 = 0;
+						var y0 = 0;
+
+						hammer.on('panend', function (e) {
+							x0 = null;
+							y0 = null;
+						});
+
+						hammer.on('panstart', function (e) {
+							x0 = 0;
+							y0 = 0;
+						});
+
+						hammer.on('panmove', function (e) {
+							if (_this5.paused) {
+								return;
+							}
+
+							if (x0 == null || y0 == null) {
+								return;
+							}
+
+							var movedX = Math.abs(x0 - e.deltaX) >= 29;
+							var movedY = Math.abs(y0 - e.deltaY) >= 29;
+
+							if (!(movedX || movedY)) {
+								return;
+							}
+
+							x0 = e.deltaX;
+							y0 = e.deltaY;
+
+							switch (e.direction) {
+								case Hammer.DIRECTION_LEFT:
+									movedX && _this5.moveLeft();
+									break;
+
+								case Hammer.DIRECTION_RIGHT:
+									movedX && _this5.moveRight();
+									break;
+
+								case Hammer.DIRECTION_DOWN:
+									movedY && _this5.moveDown();
+									break;
+
+								case Hammer.DIRECTION_UP:
+									if (movedY) {
+										x0 = null;
+										y0 = null;
+										_this5.rotate();
+									}
+									break;
+							}
+
+							_this5.stage.update();
+						});
+					})();
 				}
 			}
 		}, {
 			key: 'setText',
 			value: function setText() {
-				var _this5 = this;
+				var _this6 = this;
 
-				var third = this.height / 3;
+				var offset = this.height / 3;
 
-				var strings = [{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: R.dip(20) }, { text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: third + R.dip(20) }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: third + R.dip(40), label: "score" }, { text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: this.height - third }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: this.height - third + R.dip(25), label: "hiscore" }];
+				var strings = [{ text: R.strings.NEXT, size: R.dimen.TEXT_BIG, y: R.dip(20) }, { text: R.strings.LEVEL, size: R.dimen.TEXT_BIG, y: offset + R.dip(20) }, { text: _util2.default.str_pad(1, '0', R.strings.ZEROS.length), size: R.dimen.TEXT_SMALL, y: offset + R.dip(40), label: "level_label" }, { text: R.strings.LINES, size: R.dimen.TEXT_BIG, y: offset + R.dip(60) }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: offset + R.dip(80), label: "lines" }, { text: R.strings.SCORE, size: R.dimen.TEXT_BIG, y: offset + R.dip(100) }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: offset + R.dip(125), label: "score" }, { text: R.strings.HISCORE, size: R.dimen.TEXT_BIG, y: offset + R.dip(140) }, { text: R.strings.ZEROS, size: R.dimen.TEXT_SMALL, y: offset + R.dip(170), label: "hiscore" }];
 
 				var x = this.sidebarWidth / 2;
 
@@ -648,10 +776,10 @@ var Tetris = function () {
 						y: i * b.height + s.y
 					});
 
-					_this5.sidebar.addChild(t);
+					_this6.sidebar.addChild(t);
 
 					if (s.label) {
-						_this5[s.label] = t;
+						_this6[s.label] = t;
 					}
 				});
 
@@ -666,6 +794,13 @@ var Tetris = function () {
 			key: 'handleKeyDown',
 			value: function handleKeyDown(event) {
 				event = event || window.event;
+
+				if (this.stopped) {
+					if (event.keyCode == R.keys.SPACE) {
+						this.hideFinalScore();
+					}
+					return;
+				}
 
 				if (this.paused) {
 					if (event.keyCode == R.keys.ESC) {
@@ -745,7 +880,7 @@ var Tetris = function () {
 				this.next = _figure2.default.getInstance().produce();
 
 				if (this.hitTest()) {
-					this.restart();
+					this.stop();
 				}
 			}
 		}, {
@@ -772,10 +907,12 @@ var Tetris = function () {
 				if (this.hitTest()) {
 					this.current.y -= R.dimen.BLOCK;
 					this.swap();
+					createjs.Sound.play(R.audio.FALL.id);
 				} else if (this.current.y > threshold) {
 					this.current.y = threshold; // stick to bottom
 
 					this.swap();
+					createjs.Sound.play(R.audio.FALL.id);
 				}
 			}
 		}, {
@@ -793,6 +930,7 @@ var Tetris = function () {
 
 				this.current.y -= R.dimen.BLOCK;
 				this.swap();
+				createjs.Sound.play(R.audio.FALL.id);
 			}
 		}, {
 			key: 'moveLeft',
@@ -823,7 +961,7 @@ var Tetris = function () {
 		}, {
 			key: 'removeLines',
 			value: function removeLines() {
-				var _this6 = this;
+				var _this7 = this;
 
 				var num = this.current.numChildren;
 				var lines = [];
@@ -855,7 +993,7 @@ var Tetris = function () {
 				ys.sort(function (a, b) {
 					return a - b;
 				}).forEach(function (y) {
-					return _this6.map.remove(y);
+					return _this7.map.remove(y);
 				});
 
 				lines.forEach(function (line) {
@@ -876,12 +1014,13 @@ var Tetris = function () {
 				});
 
 				if (points > 0) {
-					this.updateScore(points);
+					createjs.Sound.play(R.audio.REMOVE.id);
+					this.updateScore(points, lines.length);
 				}
 			}
 		}, {
 			key: 'updateScore',
-			value: function updateScore(points) {
+			value: function updateScore(points, lines) {
 				points = points + parseInt(this.score.text);
 				var text = _util2.default.str_pad(points, '0', R.strings.ZEROS.length);
 
@@ -895,12 +1034,24 @@ var Tetris = function () {
 					}
 				}
 
-				this.sidebar.updateCache();
+				lines = lines + parseInt(this.lines.text);
+				this.lines.text = _util2.default.str_pad(lines, '0', R.strings.ZEROS.length);
 
 				if (points / LEVELUP_PTS >= this.level + 1) {
-					++this.level;
-					this.updateTicker();
+					this.levelUp();
 				}
+
+				this.sidebar.updateCache();
+			}
+		}, {
+			key: 'levelUp',
+			value: function levelUp() {
+				++this.level;
+
+				this.level_label.text = _util2.default.str_pad(this.level + 1, '0', R.strings.ZEROS.length);
+
+				createjs.Sound.play(R.audio.LEVELUP.id);
+				this.updateTicker();
 			}
 		}, {
 			key: 'height',
@@ -961,12 +1112,147 @@ var Tetris = function () {
 		return Tetris;
 	}();
 
+	function onResourcesLoaded() {
+		var _this8 = this;
+
+		createjs.Sound.muted = true;
+
+		var sound_off = new createjs.Bitmap(queue.getResult(R.img.SOUND_OFF.id));
+		var sound_on = new createjs.Bitmap(queue.getResult(R.img.SOUND_ON.id));
+
+		this.soundToggle = new _togglebutton2.default(sound_on, sound_off);
+
+		var b = this.soundToggle.getBounds();
+
+		this.soundToggle.set({
+			x: this.sidebarWidth / 2 - b.width / 2,
+			y: this.height - b.height - R.dip(40)
+		});
+
+		this.soundToggle.on('click', function (e) {
+			createjs.Sound.muted = !createjs.Sound.muted;
+			_this8.soundToggle.checked = !createjs.Sound.muted;
+			_this8.sidebar.updateCache();
+			_this8.stage.update();
+		});
+
+		this.sidebar.addChild(this.soundToggle);
+		this.sidebar.updateCache();
+	}
+
 	return Tetris;
 }();
 
 window.Tetris = Tetris;
 
-},{"./figure":1,"./res":3,"./swipehelper":4,"./util":5}],3:[function(require,module,exports){
+},{"./figure":1,"./pausecontainer":3,"./res":4,"./togglebutton":5,"./util":6}],3:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _res = require("./res");
+
+var R = _interopRequireWildcard(_res);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var PauseContainer = function () {
+
+	var _text = null;
+	var _hint = null;
+
+	var OPACITY = 0.8;
+
+	var _invertFilter = new createjs.ColorMatrixFilter([-1, 0, 0, 0, 255, 0, -1, 0, 0, 255, 0, 0, -1, 0, 255, 0, 0, 0, 1, 0]);
+
+	var PauseContainer = function (_createjs$Container) {
+		_inherits(PauseContainer, _createjs$Container);
+
+		function PauseContainer(width, height) {
+			_classCallCheck(this, PauseContainer);
+
+			var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(PauseContainer).call(this));
+
+			_text = new createjs.Text();
+			_hint = new createjs.Text();
+
+			_this.width = width;
+			_this.height = height;
+
+			_this.setup();
+			return _this;
+		}
+
+		_createClass(PauseContainer, [{
+			key: "setup",
+			value: function setup() {
+				var bg = new createjs.Shape();
+				bg.graphics.beginFill(R.colors.WHITE).drawRect(0, 0, this.width, this.height);
+
+				bg.alpha = OPACITY;
+
+				this.addChild(bg);
+
+				var attrs = {
+					x: this.width / 3,
+					y: this.height / 2,
+					textAlign: "center",
+					color: R.colors.BLACK,
+					lineHeight: R.dip(50)
+				};
+
+				_text.set(attrs);
+				_text.font = R.dimen.TEXT_LARGE;
+
+				this.addChild(_text);
+
+				_hint.set(attrs);
+				_hint.y += R.dip(100);
+				_hint.font = R.dimen.TEXT_SMALL;
+
+				this.addChild(_hint);
+
+				this.cache(0, 0, this.width, this.height);
+			}
+		}, {
+			key: "text",
+			set: function set(text) {
+				_text.text = text;
+			}
+		}, {
+			key: "hint",
+			set: function set(text) {
+				_hint.text = text;
+			}
+		}, {
+			key: "inverted",
+			set: function set(value) {
+				this.filters = value == true ? [_invertFilter] : null;
+			},
+			get: function get() {
+				return this.filters !== null;
+			}
+		}]);
+
+		return PauseContainer;
+	}(createjs.Container);
+
+	return createjs.promote(PauseContainer, "Container");
+}();
+
+exports.default = PauseContainer;
+
+},{"./res":4}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -975,6 +1261,20 @@ Object.defineProperty(exports, "__esModule", {
 var dip = exports.dip = function dip(value) {
 	return Math.floor(value * (window.devicePixelRatio || 1));
 };
+
+var fgte = function fgte(a, b) {
+	return Math.abs(a - b) < Number.EPSILON || a > b;
+};
+
+var pixelRatio = exports.pixelRatio = function () {
+	var ratio = window.devicePixelRatio || 1;
+
+	if (fgte(ratio, 4.0)) return "xxxhdpi";
+	if (fgte(ratio, 3.0)) return "xxhdpi";
+	if (fgte(ratio, 2.0)) return "xhdpi";
+	if (fgte(ratio, 1.5)) return "hdpi";
+	return "mdpi";
+}();
 
 var colors = exports.colors = {
 	RED: "#F44336",
@@ -1014,190 +1314,115 @@ var strings = exports.strings = {
 	NEXT: "next",
 	SCORE: "score",
 	HISCORE: "hi-score",
+	LEVEL: "level",
+	LINES: "lines",
 	ZEROS: "0000000",
-	PAUSED: "paused"
+	PAUSED: "paused",
+	PAUSE_HINT: "press esc to continue",
+	PAUSE_HINT_TAP: "long tap to continue",
+	RESTART_HINT: "press space to continue",
+	RESTART_HINT_TAP: "tap to continue",
+	FINAL_SCORE: "Final Score"
 };
 
-},{}],4:[function(require,module,exports){
+var img = exports.img = {
+	SOUND_ON: { "id": "sound_on", "src": ["res/img", pixelRatio, "ic_volume_up_white_24dp.png"].join('/') },
+	SOUND_OFF: { "id": "sound_off", "src": ["res/img", pixelRatio, "ic_volume_off_white_24dp.png"].join('/') }
+};
+
+var audio = exports.audio = {
+	FALL: { "id": "fall", "src": "res/audio/fall.mp3" },
+	LEVELUP: { "id": "levelup", "src": "res/audio/levelup.mp3" },
+	REMOVE: { "id": "remove", "src": "res/audio/remove.mp3" },
+	GAMEOVER: { "id": "gameover", "src": "res/audio/gameover.mp3" }
+};
+
+},{}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+			value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _res = require("./res");
+
+var R = _interopRequireWildcard(_res);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var SwipeHelper = function () {
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-	var THRESHOLD = 32;
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var LEFT = "left";
-	var RIGHT = "right";
-	var UP = "up";
-	var DOWN = "down";
-	var TOUCH = "touch";
+var ToggleButton = function () {
 
-	var MODE_MOVE = "move";
-	var MODE_END = "end";
+			var _checked = false;
 
-	// private api
+			var ToggleButton = function (_createjs$Container) {
+						_inherits(ToggleButton, _createjs$Container);
 
-	function getDirection(dx, dy) {
-		var direction = null;
+						function ToggleButton(checked_icon, unchecked_icon) {
+									_classCallCheck(this, ToggleButton);
 
-		if (Math.abs(dx) > Math.abs(dy)) {
-			direction = dx > 0 ? LEFT : RIGHT;
-		} else {
-			direction = dy > 0 ? UP : DOWN;
-		}
+									var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ToggleButton).call(this));
 
-		return direction;
-	}
+									_this.cursor = "pointer";
+									_this.mouseChildren = false;
 
-	function handleTouchStart(e) {
-		if (!e.touches.length) {
-			return;
-		}
+									_this.checked_icon = checked_icon;
+									_this.unchecked_icon = unchecked_icon;
 
-		this.x0 = e.touches[0].clientX;
-		this.y0 = e.touches[0].clientY;
-	}
+									var b = _this.unchecked_icon.getBounds();
 
-	function handleTouchEnd(e) {
-		this.x0 = null;
-		this.y0 = null;
-	}
+									var radius = b.width;
+									var cx = b.width / 2;
+									var cy = b.height / 2;
 
-	function handleTouchCancel(e) {
-		this.x0 = null;
-		this.y0 = null;
-	}
+									var circle = new createjs.Shape();
+									circle.graphics.beginFill(R.colors.BLACK).drawCircle(cx, cy, radius);
 
-	function handleTouchMove(e) {
-		if (this.x0 === null || this.y0 === null) {
-			return;
-		}
+									_this.addChild(circle);
+									_this.addChild(_this.unchecked_icon);
 
-		var x1 = e.changedTouches[0].clientX;
-		var y1 = e.changedTouches[0].clientY;
+									_this.cache(-cx, -cy, radius * 2, radius * 2);
 
-		var dx = this.x0 - x1;
-		var dy = this.y0 - y1;
+									_this.regX = -cx;
+									_this.regY = -cy;
+									return _this;
+						}
 
-		if (Math.abs(dx) < Number.EPSILON && Math.abs(dy) < Number.EPSILON) {
-			if (this.mode = MODE_END && typeof this.onTouched === "function") {
-				this.onTouched(x1, y1);
-				this.x0 = null;
-				this.y0 = null;
-				return;
-			}
-		}
+						_createClass(ToggleButton, [{
+									key: "checked",
+									set: function set(checked) {
+												if (_checked == checked) {
+															return;
+												}
 
-		var movedX = Math.abs(dx) >= THRESHOLD;
-		var movedY = Math.abs(dy) >= THRESHOLD;
+												_checked = checked;
 
-		if (!(movedX || movedY)) {
-			return;
-		}
+												this.removeChildAt(this.numChildren - 1);
+												this.addChild(_checked ? this.checked_icon : this.unchecked_icon);
 
-		var direction = getDirection(dx, dy);
+												this.updateCache();
+									},
+									get: function get() {
+												return _checked;
+									}
+						}]);
 
-		switch (direction) {
-			case LEFT:
-				movedX && typeof this.onSwipingLeft === "function" && this.onSwipingLeft();
-				break;
+						return ToggleButton;
+			}(createjs.Container);
 
-			case RIGHT:
-				movedX && typeof this.onSwipingRight === "function" && this.onSwipingRight();
-				break;
-
-			case UP:
-				movedY && typeof this.onSwipingUp === "function" && this.onSwipingUp();
-				break;
-
-			case DOWN:
-				movedY && typeof this.onSwipingDown === "function" && this.onSwipingDown();
-				break;
-		}
-
-		this.x0 = x1;
-		this.y0 = y1;
-	}
-
-	// public api
-
-	var SwipeHelper = function () {
-		function SwipeHelper(target) {
-			var _this = this;
-
-			var mode = arguments.length <= 1 || arguments[1] === undefined ? MODE_MOVE : arguments[1];
-
-			_classCallCheck(this, SwipeHelper);
-
-			this.x0 = null;
-			this.y0 = null;
-
-			this.mode = mode;
-
-			this.onSwipingLeft = null;
-			this.onSwipingRight = null;
-			this.onSwipingUp = null;
-			this.onSwipingDown = null;
-			this.onTouched = null;
-
-			target.addEventListener("touchstart", function (e) {
-				return handleTouchStart.call(_this, e);
-			}, false);
-
-			if (this.mode == MODE_MOVE) {
-				target.addEventListener("touchend", function (e) {
-					return handleTouchEnd.call(_this, e);
-				}, false);
-				target.addEventListener("touchmove", function (e) {
-					return handleTouchMove.call(_this, e);
-				}, false);
-				target.addEventListener("touchcancel", function (e) {
-					return handleTouchCancel.call(_this, e);
-				}, false);
-			} else {
-				target.addEventListener("touchend", function (e) {
-					return handleTouchMove.call(_this, e);
-				}, false);
-				target.addEventListener("touchcancel", function (e) {
-					return handleTouchCancel.call(_this, e);
-				}, false);
-			}
-		}
-
-		_createClass(SwipeHelper, [{
-			key: "on",
-			value: function on(direction, callback) {
-				switch (direction) {
-					case LEFT:
-						this.onSwipingLeft = callback;break;
-					case RIGHT:
-						this.onSwipingRight = callback;break;
-					case UP:
-						this.onSwipingUp = callback;break;
-					case DOWN:
-						this.onSwipingDown = callback;break;
-					case TOUCH:
-						this.onTouched = callback;break;
-				}
-			}
-		}]);
-
-		return SwipeHelper;
-	}();
-
-	return SwipeHelper;
+			return createjs.promote(ToggleButton, "Container");
 }();
 
-exports.default = SwipeHelper;
+exports.default = ToggleButton;
 
-},{}],5:[function(require,module,exports){
+},{"./res":4}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1237,6 +1462,11 @@ var Util = function () {
 			} catch (e) {
 				return false;
 			}
+		}
+	}, {
+		key: 'vibrate',
+		value: function vibrate(duration) {
+			return window.navigator && typeof window.navigator.vibrate === "function" ? window.navigator.vibrate(duration) : false;
 		}
 	}]);
 
