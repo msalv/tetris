@@ -2,6 +2,7 @@ import * as R from './res'
 import Util from './util'
 import FiguresFactory from './figure'
 import ToggleButton from './togglebutton'
+import PauseContainer from './pausecontainer'
 
 const Tetris = (() => {
 
@@ -142,7 +143,6 @@ const Tetris = (() => {
 			this.soundToggle = null;
 
 			this.map = new BlocksMap();
-			this.invertFilter = new createjs.ColorMatrixFilter([-1,0,0,0,255,0,-1,0,0,255,0,0,-1,0,255,0,0,0,1,0]);
 
 			this.bindEvents();
 			this.restart();
@@ -297,49 +297,19 @@ const Tetris = (() => {
 		}
 
 		showPauseOverlay() {
-			// todo: make it a class PauseContainer
-
 			if ( this.overlay !== null ) {
 				this.stage.addChild(this.overlay);
 				return;
 			}
 
-			this.overlay = new createjs.Container();
+			this.overlay = new PauseContainer(this.width, this.height);
+			
+			this.overlay.text = R.strings.PAUSED;
+			this.overlay.hint = !createjs.Touch.isSupported() ? R.strings.PAUSE_HINT : R.strings.PAUSE_HINT_TAP;
 
-			let shape = new createjs.Shape();
-			shape.graphics
-				.beginFill(R.colors.WHITE)
-				.drawRect(0, 0, this.width, this.height);
-
-			shape.alpha = 0.8;
-
-			this.overlay.addChild(shape);
-
-			let text = new createjs.Text(R.strings.PAUSED, R.dimen.TEXT_LARGE, R.colors.BLACK);
-
-			let b = text.getBounds();
-			text.set({
-				x: this.fieldWidth / 2,// - b.width / 2,
-				y: this.height / 2 - b.height / 2,
-				textAlign: "center",
-				lineHeight: R.dip(50)
-			});
-
-			this.overlay.addChild(text);
-
-			let t = !createjs.Touch.isSupported() ? R.strings.PAUSE_HINT : R.strings.PAUSE_HINT_TAP;
-
-			let hint = new createjs.Text(t, R.dimen.TEXT_SMALL, R.colors.BLACK);
-			hint.set({
-				x: this.fieldWidth / 2,
-				y: text.y + R.dip(100),
-				textAlign: "center"
-			});
-
-			this.overlay.addChild(hint);
+			this.overlay.updateCache();
 
 			this.stage.addChild(this.overlay);
-			this.overlay.cache(0, 0, this.width, this.height);
 		}
 
 		hidePauseOverlay() {
@@ -351,26 +321,22 @@ const Tetris = (() => {
 				return;
 			}
 
-			this.overlay.filters = [this.invertFilter];
+			this.overlay.inverted = true;
 
-			let label = this.overlay.getChildAt(this.overlay.numChildren - 2);
-			label.text = [R.strings.FINAL_SCORE, parseInt(this.score.text)].join('\n');
-
-			let hint = this.overlay.getChildAt(this.overlay.numChildren - 1);
-			hint.text = (!createjs.Touch.isSupported()) ? R.strings.RESTART_HINT : R.strings.RESTART_HINT_TAP;
+			this.overlay.text = [R.strings.FINAL_SCORE, parseInt(this.score.text)].join('\n');
+			this.overlay.hint = (!createjs.Touch.isSupported()) ? R.strings.RESTART_HINT : R.strings.RESTART_HINT_TAP;
 
 			this.overlay.updateCache();
 		}
 
 		hideFinalScore() {
 			if (this.overlay !== null) {
-				let label = this.overlay.getChildAt(this.overlay.numChildren - 2);
-				label.text = R.strings.PAUSED;
 
-				let hint = this.overlay.getChildAt(this.overlay.numChildren - 1);
-				hint.text = (!createjs.Touch.isSupported()) ? R.strings.PAUSE_HINT : R.strings.PAUSE_HINT_TAP;
+				this.overlay.inverted = false;
+				
+				this.overlay.text = R.strings.PAUSED;
+				this.overlay.hint = (!createjs.Touch.isSupported()) ? R.strings.PAUSE_HINT : R.strings.PAUSE_HINT_TAP;
 
-				this.overlay.filters = null;
 				this.overlay.updateCache();
 			}
 			this.restart();
