@@ -1,6 +1,6 @@
 {
   "name": "tetris",
-  "version": "0.9.5",
+  "version": "1.0.0",
   "description": "HTML5 Tetris implementation",
   "license": "CC-BY-NC-SA-4.0",
   "repository": {
