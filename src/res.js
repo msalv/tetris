@@ -71,5 +71,6 @@ export const img = {
 export const audio = {
 	FALL: {"id": "fall", "src": "res/audio/fall.mp3"},
 	LEVELUP: {"id": "levelup",  "src": "res/audio/levelup.mp3"},
-	REMOVE: {"id": "remove",  "src": "res/audio/remove.mp3"}
+	REMOVE: {"id": "remove",  "src": "res/audio/remove.mp3"},
+	GAMEOVER: {"id": "gameover",  "src": "res/audio/gameover.mp3"},
 }
