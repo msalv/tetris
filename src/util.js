@@ -5,13 +5,13 @@ class Util {
 
 	static str_pad(str, pad, num) {
 		str = (''+str);
-		var s = Array(num+1).join(pad);
+		let s = Array(num+1).join(pad);
 		return s.substring(0, s.length - str.length) + str;
 	}
 
 	static storageAvailable(type) {
 		try {
-			var storage = window[type],
+			let storage = window[type],
 				x = '__storage_test__';
 			storage.setItem(x, x);
 			storage.removeItem(x);
@@ -20,6 +20,12 @@ class Util {
 		catch(e) {
 			return false;
 		}
+	}
+
+	static vibrate(duration) {
+		return (window.navigator && typeof window.navigator.vibrate === "function") 
+			? window.navigator.vibrate(duration)
+			: false;
 	}
 }
 
